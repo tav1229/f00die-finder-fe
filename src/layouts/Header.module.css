@@ -1,0 +1,16 @@
+/* @import '@/assets/styles/variables.css'; */
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    gap: 10px;
+    cursor: pointer;
+    color: #CA3433;
+    transition: color 0.3s;
+}
+
+.item:hover {
+    color: white;
+}

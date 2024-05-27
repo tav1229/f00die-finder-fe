@@ -1,0 +1,1 @@
+export const baseUrl = 'https://f00diefinder.id.vn/api'
