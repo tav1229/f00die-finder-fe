@@ -1,8 +1,60 @@
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import UserNavigation from "./UserNavigation";
+import { useState, useEffect } from "react";
+import { getMyInfo, updateMyInfo } from "../../apis/user";
+import { toast, Bounce } from "react-toastify";
 
 export default function User() {
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+
+    useEffect(() => {
+        const fetchMyInfo = async () => {
+            try {
+                const response = await getMyInfo();
+                setName(response.fullName);
+                setPhone(response.phoneNumber);
+                setEmail(response.email);
+            } catch (error) {
+                console.error(`Error in fetchMyInfo request: ${error.message}`);
+            }
+        };
+
+        fetchMyInfo();
+    }, []);
+
+    const handleUpdateMyInfo = async (event) => {
+        event.preventDefault();
+        try {
+            await updateMyInfo({ fullName: name, phoneNumber: phone, email: email});
+            toast.success("Cập nhật thông tin thành công", {
+                position: "top-center",
+                autoClose: 1998,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+        } catch (error) {
+            toast.error("Cập nhật thông tin thất bại", {
+                position: "top-center",
+                autoClose: 1998,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+        }
+    }
+
     return (
         <section className="w-full flex flex-col items-center justify-start h-auto min-h-screen bg-[#EEEEEE]">
             <div className="w-full flex flex-col py-4 px-7 bg-[#F7F6F4]">
@@ -39,7 +91,7 @@ export default function User() {
                         <h1 className="text-xl font-medium uppercase text-center mb-6">
                             Thông tin tài khoản
                         </h1>
-                        <form action="" className="flex flex-col gap-2">
+                        <form onSubmit={handleUpdateMyInfo} className="flex flex-col gap-2">
                             <div className="flex items-center">
                                 <label
                                     htmlFor="name"
@@ -50,6 +102,9 @@ export default function User() {
                                 <input
                                     placeholder="Họ và tên"
                                     type="text"
+                                    required
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     className="border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-5 max-w-[340px]"
                                 />
                             </div>
@@ -63,7 +118,12 @@ export default function User() {
                                 <input
                                     placeholder="Email"
                                     type="text"
-                                    className="border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-5 max-w-[340px]"
+                                    required
+                                    disabled
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+
+                                    className="border border-[#CCCCCC] h-10 bg-gray-100 outline-none text-gray-400 font-medium text-sm block w-full px-5 max-w-[340px]"
                                 />
                             </div>
                             <div className="flex items-center">
@@ -76,13 +136,16 @@ export default function User() {
                                 <input
                                     placeholder="Số điện thoại"
                                     type="text"
+                                    required
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
                                     className="border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-5 max-w-[340px]"
                                 />
                             </div>
 
                             <div className="w-full mt-2 flex justify-center">
                                 <button
-                                    type="button"
+                                    type="submit"
                                     className="bg-[#D02028] text-white font-medium h-10 w-40 rounded-md text-sm "
                                 >
                                     Cập nhật

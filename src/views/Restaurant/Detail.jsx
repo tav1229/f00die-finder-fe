@@ -1,36 +1,278 @@
-import { Search, ListFilter } from "lucide-react";
-import AtomDropdown from "@/components/Atoms/AtomDropdown";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { DatePicker } from "antd";
+import { Search, ListFilter, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
-    ChevronRight,
-    MapPin,
-    Flag,
-    Clock,
-    Baby,
-    UserRound,
-} from "lucide-react";
-import { Carousel } from "antd";
+    getRestaurant,
+    saveRestaurant,
+    unsaveRestaurant,
+} from "../../apis/restaurant";
+import { Image } from "antd";
+import { useBookingStore } from "@/storages/booking";
+import DOMPurify from "dompurify";
+import { Rating, Textarea } from "@mantine/core";
+import { MapPin, Flag, Clock, Star, Heart } from "lucide-react";
+import { Carousel, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
+import { toast, Bounce } from "react-toastify";
+import BookingForm from "@/components/BookingForm";
+import { FaHeart } from "react-icons/fa6";
+import {
+    getReviewComments,
+    createReviewComment,
+} from "../../apis/reviewComment";
+import ModalAlert from "@/components/ModalAlert";
 
-const contentStyle = {
-    margin: 0,
-    height: "772px",
-    color: "#fff",
-    // lineHeight: '160px',
-    textAlign: "center",
-    background: "#364d79",
-    borderRadius: "10px",
-};
+const daysOfWeek = [
+    "Chủ Nhật",
+    "Thứ Hai",
+    "Thứ Ba",
+    "Thứ Tư",
+    "Thứ Năm",
+    "Thứ Sáu",
+    "Thứ Bảy",
+];
+function formatDate(isoString) {
+    const date = new Date(isoString);
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const year = date.getUTCFullYear();
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
 
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
 export default function Detail() {
     const navigate = useNavigate();
-    const onChange = (date, dateString) => {
-        console.log(date, dateString);
+    const { id } = useParams();
+    const { booking, setBooking } = useBookingStore();
+    const inputRef = useRef(null);
+
+    const [restaurant, setRestaurant] = useState({});
+    const [ratingValue, setRatingValue] = useState(5);
+    const [comment, setComment] = useState("");
+    const [isCommented, setIsCommented] = useState(false);
+    const [reviewComments, setReviewComments] = useState([]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [alertContent, setAlertContent] = useState({});
+
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    const timeOptions = [];
+    for (let hour = 0; hour < 24; hour++) {
+        for (let minute = 0; minute < 60; minute += 15) {
+            const timeString = `${hour.toString().padStart(2, "0")}:${minute
+                .toString()
+                .padStart(2, "0")}`;
+            timeOptions.push({ id: timeString, name: timeString });
+        }
+    }
+
+    useEffect(() => {
+        const fetchRestaurant = async () => {
+            try {
+                const data = await getRestaurant(id);
+                setRestaurant(data);
+            } catch (error) {
+                console.error(
+                    `Error in fetchRestaurant request: ${error.message}`
+                );
+            }
+        };
+
+        const fetchReviewComments = async () => {
+            try {
+                const response = await getReviewComments(id);
+                setReviewComments(response.data);
+            } catch (error) {
+                console.error(
+                    `Error in fetchReviewComments request: ${error.message}`
+                );
+            }
+        };
+
+        inputRef.current.scrollIntoView({ behavior: "smooth" });
+
+        fetchReviewComments();
+        fetchRestaurant();
+    }, []);
+
+    useEffect(() => {
+        const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
+        if (ids_saved) {
+            if (ids_saved.includes(id)) {
+                setIsFavorite(true);
+            }
+        }
+    }, []);
+
+    function formatTime(time) {
+        return time.slice(0, 5);
+    }
+
+    function getCurrentDay() {
+        const date = new Date();
+        return date.getDay();
+    }
+
+    const handleRatingChange = (value) => {
+        setRatingValue(value);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleCreateReviewComment = async () => {
+        if (isCommented) {
+            toast.error("Bạn đã đánh giá rồi", {
+                position: "top-center",
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+            return;
+        }
+        if (!comment) {
+            toast.error("Vui lòng nhập nội dung đánh giá", {
+                position: "top-center",
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+            return;
+        }
+        try {
+            const response = await createReviewComment({
+                restaurantId: id,
+                rating: ratingValue,
+                content: comment,
+            });
+            if (response.status !== 200) {
+                setAlertContent({
+                    status: "warning",
+                    title: "Thông báo",
+                    content: "Vui lòng đăng nhập để đánh giá",
+                });
+                setIsModalOpen(true);
+                return;
+            }
+            setIsCommented(true);
+            setReviewComments([response.data, ...reviewComments]);
+            toast.success("Đánh giá của bạn đã được gửi thành công!", {
+                position: "top-center",
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+
+            console.log("Create review comment response:", response);
+        } catch (error) {
+            console.error("Error creating review comment:", error);
+        }
+    };
+
+    function checkIfOpen(businessHours) {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const currentTime = now.toTimeString().slice(0, 5);
+        if (!businessHours) {
+            return {
+                status: "CLOSED",
+                text: "Đóng cửa",
+            };
+        }
+        const todayHours = businessHours.find(
+            (day) => day.dayOfWeek === dayOfWeek
+        );
+
+        if (todayHours) {
+            const { openTime, closeTime } = todayHours;
+            const openingTime = new Date(now.toDateString() + " " + openTime);
+            const closingTime = new Date(now.toDateString() + " " + closeTime);
+            const thirtyMinutesBeforeClose = new Date(closingTime - 30 * 60000);
+
+            if (currentTime >= openTime && currentTime <= closeTime) {
+                return {
+                    status: "OPEN",
+                    text: `Đang mở cửa: ${openTime.slice(
+                        0,
+                        5
+                    )} - ${closeTime.slice(0, 5)}`,
+                };
+            } else if (now < openingTime) {
+                return {
+                    status: "SOON_OPEN",
+                    text: `Sắp mở cửa: ${openTime.slice(0, 5)}`,
+                };
+            } else if (now >= thirtyMinutesBeforeClose && now < closingTime) {
+                return {
+                    status: "SOON_CLOSE",
+                    text: `Sắp đóng cửa: ${closeTime.slice(0, 5)}`,
+                };
+            }
+        }
+        return {
+            status: "CLOSED",
+            text: "Đóng cửa",
+        };
+    }
+
+    const handleClickBooking = (booking) => {
+        setBooking(booking);
+        localStorage.setItem("booking", JSON.stringify(booking));
+        navigate(`/restaurant/${id}/booking`);
+    };
+
+    const handleClickFavorite = async () => {
+        setIsFavorite(!isFavorite);
+        if (isFavorite) {
+            try {
+                await unsaveRestaurant(id);
+                const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
+                const index = ids_saved.indexOf(id);
+                if (index > -1) {
+                    ids_saved.splice(index, 1);
+                }
+                localStorage.setItem("ids_saved", JSON.stringify(ids_saved));
+            } catch (error) {
+                console.error("Error unsaving restaurant:", error);
+            }
+        } else {
+            try {
+                await saveRestaurant(id);
+                const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
+                if (ids_saved) {
+                    ids_saved.push(id);
+                    localStorage.setItem(
+                        "ids_saved",
+                        JSON.stringify(ids_saved)
+                    );
+                } else {
+                    localStorage.setItem("ids_saved", JSON.stringify([id]));
+                }
+            } catch (error) {
+                console.error("Error saving restaurant:", error);
+            }
+        }
     };
     return (
-        <section className="w-full flex justify-center h-auto bg-[#EEEEEE]">
+        <section
+            className="w-full flex justify-center h-auto bg-[#EEEEEE]"
+            ref={inputRef}
+        >
             <div className="flex flex-col w-full max-w-[1280px] bg-[#EEEEEE]">
                 <div className="w-full flex flex-col py-4 px-7">
                     <div className="search  flex justify-center items-center w-3/4 gap-4">
@@ -47,73 +289,80 @@ export default function Detail() {
                     </div>
                 </div>
 
-                <div className="w-full flex flex-col justify-center items-center ">
+                <div className="w-full flex flex-col justify-center px-10 items-center ">
                     <div className="w-full max-w-[1208px] flex flex-col gap-5">
                         <div className="grid grid-cols-3 gap-4 ">
                             <div className="col-span-2 rounded-lg overflow-hidden">
                                 <Carousel autoplay arrows>
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[364px] object-cover rounded-lg"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-7-normal-2263206457803.webp"
-                                        alt=""
-                                        className="w-full h-[364px] object-cover rounded-lg"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-6-normal-2263206557804.webp"
-                                        alt=""
-                                        className="w-full h-[364px] object-cover rounded-lg"
-                                    />
+                                    {restaurant?.restaurantImages?.map(
+                                        (item, index) => (
+                                            <img
+                                                key={index}
+                                                src={item.url}
+                                                alt=""
+                                                className="w-full h-[364px] object-cover rounded-lg"
+                                            />
+                                        )
+                                    )}
                                 </Carousel>
                             </div>
                             <div>
                                 <div className="grid grid-cols-2 gap-2 h-auto">
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-7-300-2263206457803.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
-                                    <img
-                                        src="https://pasgo.vn/Upload/anh-chi-tiet/slide-red-bean-8-normal-2263206357802.webp"
-                                        alt=""
-                                        className="w-full h-[115px] object-cover rounded-sm"
-                                    />
+                                    <Image.PreviewGroup
+                                        preview={{
+                                            onChange: (current, prev) =>
+                                                console.log(
+                                                    `current index: ${current}, prev index: ${prev}`
+                                                ),
+                                        }}
+                                    >
+                                        {restaurant?.restaurantImages?.map(
+                                            (item, index) => (
+                                                <Image
+                                                    key={index}
+                                                    src={item.url}
+                                                    height={115}
+                                                    className="object-cover rounded-sm"
+                                                    // className="w-full h-[115px] object-cover rounded-sm"
+                                                />
+                                            )
+                                        )}
+                                    </Image.PreviewGroup>
                                 </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-4 ">
                             <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
-                                <h1 className="py-1 text-[28px] font-bold">
-                                    Red Bean Central Restaurant - Hàng Thùng
-                                </h1>
+                                <div className="w-full flex justify-between">
+                                    <h1 className="py-1 text-[28px] font-bold">
+                                        {restaurant?.name}
+                                    </h1>
+                                    <Tooltip
+                                        title={
+                                            isFavorite
+                                                ? "Bỏ yêu thích"
+                                                : "Yêu thích"
+                                        }
+                                    >
+                                        <button
+                                            className="flex items-center justify-center h-12"
+                                            onClick={handleClickFavorite}
+                                        >
+                                            {isFavorite ? (
+                                                <FaHeart className="w-7 h-7 text-red-500" />
+                                            ) : (
+                                                <Heart className="w-7 h-7 text-gray-500" />
+                                            )}
+                                        </button>
+                                    </Tooltip>
+                                </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <MapPin className="w-5 h-5" />
                                     <span className="font-medium">
-                                        21 Hàng Thùng, P. Lý Thái Tổ, Q. Hoàn
-                                        Kiếm
+                                        {restaurant?.location?.address},{" "}
+                                        {restaurant?.wardOrCommune?.name},{" "}
+                                        {restaurant?.district?.name} ,{" "}
+                                        {restaurant?.provinceOrCity?.name}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
@@ -122,16 +371,60 @@ export default function Detail() {
                                         Loại hình:
                                     </span>
                                     <span className="text-[#D02028] font-medium">
-                                        Gọi món Á-Âu
+                                        {restaurant?.cuisineTypes
+                                            ?.map((item, index) => item.name)
+                                            .join(", ")}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Clock className="w-5 h-5" />
-                                    <span className="font-medium">
-                                        Giờ mở cửa:
-                                    </span>
-                                    <span className="text-[#D02028] font-medium">
-                                        08:00 - 22:00
+                                    {restaurant?.businessHours &&
+                                    checkIfOpen(restaurant?.businessHours)
+                                        .status === "OPEN" ? (
+                                        <span className="text-[#4CAF50] font-medium">
+                                            {
+                                                checkIfOpen(
+                                                    restaurant?.businessHours
+                                                ).text
+                                            }
+                                        </span>
+                                    ) : checkIfOpen(restaurant?.businessHours)
+                                          .status === "SOON_OPEN" ? (
+                                        <span className="text-[#D02028] font-medium">
+                                            {
+                                                checkIfOpen(
+                                                    restaurant?.businessHours
+                                                ).text
+                                            }
+                                        </span>
+                                    ) : checkIfOpen(restaurant?.businessHours)
+                                          .status === "SOON_CLOSE" ? (
+                                        <span className="text-[#FFA500] font-medium">
+                                            {
+                                                checkIfOpen(
+                                                    restaurant?.businessHours
+                                                ).text
+                                            }
+                                        </span>
+                                    ) : (
+                                        <span className="text-[#D02028] font-medium">
+                                            {
+                                                checkIfOpen(
+                                                    restaurant?.businessHours
+                                                ).text
+                                            }
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-800">
+                                    <Star className="w-5 h-5" />
+                                    <Rating
+                                        fractions={1}
+                                        value={restaurant?.rating}
+                                        readOnly
+                                    />
+                                    <span className="text-xl font-bold text-[#ff9f00]">
+                                        {restaurant?.rating}
                                     </span>
                                 </div>
                             </div>
@@ -145,325 +438,196 @@ export default function Detail() {
                                 <span className="text-[#D02028] font-bold text-sm">
                                     Ưu đãi hấp dẫn
                                 </span>
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex w-full gap-2">
-                                        <div className="flex flex-col gap-2">
-                                            <label
-                                                htmlFor="number-person"
-                                                className="flex items-center font-medium text-sm gap-1 text-gray-800"
-                                            >
-                                                <UserRound className="w-5 h-5" />{" "}
-                                                Người lớn
-                                            </label>
-                                            <AtomDropdown
-                                                id="number-person"
-                                                // className="w-[207px] h-[34px] rounded-none text-gray-600"
-                                                options={[
-                                                    { value: "1", label: "1" },
-                                                    { value: "2", label: "2" },
-                                                    { value: "3", label: "3" },
-                                                    { value: "4", label: "4" },
-                                                    { value: "5", label: "5" },
-                                                    { value: "6", label: "6" },
-                                                    { value: "7", label: "7" },
-                                                    { value: "8", label: "8" },
-                                                    { value: "9", label: "9" },
-                                                    {
-                                                        value: "10",
-                                                        label: "10",
-                                                    },
-                                                ]}
-                                                value="1"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                            <label
-                                                htmlFor="number-baby"
-                                                className="flex items-center font-medium text-sm gap-1 text-gray-800"
-                                            >
-                                                <Baby className="w-5 h-5" /> Trẻ
-                                                em
-                                            </label>
-                                            <AtomDropdown
-                                                id="number-baby"
-                                                // className="w-[207px] h-[34px] rounded-none text-gray-600"
-                                                options={[
-                                                    { value: "1", label: "1" },
-                                                    { value: "2", label: "2" },
-                                                    { value: "3", label: "3" },
-                                                    { value: "4", label: "4" },
-                                                    { value: "5", label: "5" },
-                                                    { value: "6", label: "6" },
-                                                    { value: "7", label: "7" },
-                                                    { value: "8", label: "8" },
-                                                    { value: "9", label: "9" },
-                                                    {
-                                                        value: "10",
-                                                        label: "10",
-                                                    },
-                                                ]}
-                                                value="1"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex w-full gap-2">
-                                        <div className="flex flex-col gap-2 w-full">
-                                            <label
-                                                htmlFor="date"
-                                                className="flex items-center font-medium text-sm gap-1 text-gray-800"
-                                            >
-                                                <Clock className="w-5 h-5" />{" "}
-                                                Thời gian
-                                            </label>
-                                            <div className="flex w-full gap-2">
-                                                <DatePicker
-                                                    onChange={onChange}
-                                                    className="h-[38px] border w-full hover:border-gray-300 focus:border-gray-300 active:border-gray-300"
+                                <BookingForm
+                                    id={id}
+                                    onBooking={handleClickBooking}
+                                />
+                            </div>
+                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
+                                <h2 className="py-1 text-[20px] font-semibold">
+                                    Mô tả
+                                </h2>
+                                <div
+                                    className="text-sm"
+                                    dangerouslySetInnerHTML={{
+                                        __html: DOMPurify.sanitize(
+                                            restaurant?.description,
+                                            { USE_PROFILES: { html: true } }
+                                        ),
+                                    }}
+                                ></div>
+                            </div>
+                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
+                                <h2 className="py-1 text-[20px] font-semibold">
+                                    Menu
+                                </h2>
+                                <div className="grid grid-cols-3 gap-[10px]">
+                                    <Image.PreviewGroup
+                                        preview={{
+                                            onChange: (current, prev) =>
+                                                console.log(
+                                                    `current index: ${current}, prev index: ${prev}`
+                                                ),
+                                        }}
+                                    >
+                                        {restaurant?.menuImages?.map(
+                                            (item, index) => (
+                                                <Image
+                                                    key={index}
+                                                    src={item.url}
+                                                    height={235}
+                                                    className="object-cover rounded-md"
+                                                    // className="w-full h-[235px] object-cover rounded-md"
                                                 />
-                                                <AtomDropdown
-                                                    id="time"
-                                                    // className="w-[207px] h-[34px] rounded-none text-gray-600"
-                                                    options={[
-                                                        {
-                                                            value: "1",
-                                                            label: "01:00",
-                                                        },
-                                                        {
-                                                            value: "2",
-                                                            label: "01:15",
-                                                        },
-                                                        {
-                                                            value: "3",
-                                                            label: "01:30",
-                                                        },
-                                                        {
-                                                            value: "4",
-                                                            label: "01:45",
-                                                        },
-                                                        {
-                                                            value: "5",
-                                                            label: "02:00",
-                                                        },
-                                                        {
-                                                            value: "6",
-                                                            label: "02:15",
-                                                        },
-                                                        {
-                                                            value: "7",
-                                                            label: "02:30",
-                                                        },
-                                                        {
-                                                            value: "8",
-                                                            label: "02:45",
-                                                        },
-                                                        {
-                                                            value: "9",
-                                                            label: "03:00",
-                                                        },
-                                                        {
-                                                            value: "10",
-                                                            label: "03:15",
-                                                        },
-                                                        {
-                                                            value: "11",
-                                                            label: "03:30",
-                                                        },
-                                                        {
-                                                            value: "12",
-                                                            label: "03:45",
-                                                        },
-                                                        {
-                                                            value: "13",
-                                                            label: "04:00",
-                                                        },
-                                                        {
-                                                            value: "14",
-                                                            label: "04:15",
-                                                        },
-                                                        {
-                                                            value: "15",
-                                                            label: "04:30",
-                                                        },
-                                                        {
-                                                            value: "16",
-                                                            label: "04:45",
-                                                        },
-                                                        {
-                                                            value: "17",
-                                                            label: "05:00",
-                                                        },
-                                                        {
-                                                            value: "18",
-                                                            label: "05:15",
-                                                        },
-                                                        {
-                                                            value: "19",
-                                                            label: "05:30",
-                                                        },
-                                                        {
-                                                            value: "20",
-                                                            label: "05:45",
-                                                        },
-                                                        {
-                                                            value: "21",
-                                                            label: "06:00",
-                                                        },
-                                                        {
-                                                            value: "22",
-                                                            label: "06:15",
-                                                        },
-                                                        {
-                                                            value: "23",
-                                                            label: "06:30",
-                                                        },
-                                                        {
-                                                            value: "24",
-                                                            label: "06:45",
-                                                        },
-                                                        {
-                                                            value: "25",
-                                                            label: "07:00",
-                                                        },
-                                                        {
-                                                            value: "26",
-                                                            label: "07:15",
-                                                        },
-                                                        {
-                                                            value: "27",
-                                                            label: "07:30",
-                                                        },
-                                                        {
-                                                            value: "28",
-                                                            label: "07:45",
-                                                        },
-                                                        {
-                                                            value: "29",
-                                                            label: "08:00",
-                                                        },
-                                                        {
-                                                            value: "30",
-                                                            label: "08:15",
-                                                        },
-                                                        {
-                                                            value: "31",
-                                                            label: "08:30",
-                                                        },
-                                                        {
-                                                            value: "32",
-                                                            label: "08:45",
-                                                        },
-                                                        {
-                                                            value: "33",
-                                                            label: "09:00",
-                                                        },
-                                                        {
-                                                            value: "34",
-                                                            label: "09:15",
-                                                        },
-                                                        {
-                                                            value: "35",
-                                                            label: "09:30",
-                                                        },
-                                                        {
-                                                            value: "36",
-                                                            label: "09:45",
-                                                        },
-                                                        {
-                                                            value: "37",
-                                                            label: "10:00",
-                                                        },
-                                                        {
-                                                            value: "38",
-                                                            label: "10:15",
-                                                        },
-                                                        {
-                                                            value: "39",
-                                                            label: "10:30",
-                                                        },
-                                                    ]}
-                                                    value="1"
-                                                />
+                                            )
+                                        )}
+                                    </Image.PreviewGroup>
+                                </div>
+                            </div>
+                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
+                                <h2 className="py-1 text-[20px] font-semibold">
+                                    Tiên ích
+                                </h2>
+                                <div className="grid grid-cols-2 gap-4 pb-4">
+                                    {restaurant?.additionalServices?.map(
+                                        (item, index) => {
+                                            return (
+                                                <div
+                                                    className="flex items-center gap-3"
+                                                    key={index}
+                                                >
+                                                    <Check className="w-5 h-5 p-1 bg-[#4CAF50] text-white rounded-full" />
+                                                    <span className="text-sm font-medium">
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+                                            );
+                                        }
+                                    )}
+                                </div>
+                            </div>
+                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
+                                <h2 className="py-1 text-[20px] font-semibold">
+                                    Giờ hoạt động
+                                </h2>
+
+                                <div className="max-w-fit border border-gray-500 py-5 px-3">
+                                    {restaurant?.businessHours?.map(
+                                        (item, index) => (
+                                            <div
+                                                className="grid grid-cols-2 w-[232px] py-1 text-sm font-medium"
+                                                key={index}
+                                            >
+                                                <span
+                                                    className={`uppercase text-center ${
+                                                        getCurrentDay() ===
+                                                        item.dayOfWeek
+                                                            ? "text-red-600"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {daysOfWeek[item.dayOfWeek]}
+                                                </span>
+                                                <span
+                                                    className={`text-center ${
+                                                        getCurrentDay() ===
+                                                        item.dayOfWeek
+                                                            ? "text-red-600"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {formatTime(item.openTime)}{" "}
+                                                    -{" "}
+                                                    {formatTime(item.closeTime)}
+                                                </span>
                                             </div>
-                                        </div>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
+                                <h2 className="py-1 text-[20px] font-semibold">
+                                    Nhận xét và đánh giá
+                                </h2>
+
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-semibold">
+                                            Đánh giá:
+                                        </span>
+                                        <Rating
+                                            fractions={1}
+                                            value={ratingValue}
+                                            onChange={handleRatingChange}
+                                        />
                                     </div>
-                                    <button onClick={() => navigate("/restaurant/1/booking")} className="w-full bg-[#D02028] mt-4 mb-2 text-white h-[38px] rounded-md font-medium">
-                                        Đặt chỗ
+                                    <Textarea
+                                        placeholder="Autosize with 4 rows max"
+                                        autosize
+                                        minRows={3}
+                                        maxRows={5}
+                                        value={comment}
+                                        onChange={(event) =>
+                                            setComment(
+                                                event.currentTarget.value
+                                            )
+                                        }
+                                    />
+                                    <button
+                                        className="w-36 py-2 bg-[#d02028] text-sm text-white rounded-sm"
+                                        onClick={handleCreateReviewComment}
+                                    >
+                                        Gửi đánh giá
                                     </button>
                                 </div>
-                            </div>
-                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
-                                <h2 className="py-1 text-[20px] font-semibold">
-                                    Tóm tắt
-                                </h2>
-                                <div className="text-sm">
-                                    PHÙ HỢP:Đặt tiệc, liên hoan, tụ họp bạn bè,
-                                    gia đình, sinh nhậtMÓN ĐẶC SẮC: GHẸ, BỀ BỀ,
-                                    TÔM CÀNG SEN, ỐC HƯƠNG, CÁ HỒI,
-                                    DIMSUM,…KHÔNG GIAN: - Phong cách Hồng Kông -
-                                    Sức chứa: 500 khách CHỖ ĐỂ XE: - Xe ô tô:
-                                    Tầng hầm của toà nhà (Phí phụ thuộc đơn vị
-                                    trông giữ xe) - Xe máy: Tầng hầm của toà nhà
-                                    (Phí phụ thuộc đơn vị trông giữ xe) ĐIỂM ĐẶC
-                                    TRƯNG: Buffet hải sản hơn 200 món, quầy line
-                                    rộng rãi, phục vụ liên tục.
-                                </div>
-                            </div>
-                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
-                                <h2 className="py-1 text-[20px] font-semibold">
-                                    Quy định
-                                </h2>
-                                <div className="text-sm">
-                                    PHÙ HỢP:Đặt tiệc, liên hoan, tụ họp bạn bè,
-                                    gia đình, sinh nhậtMÓN ĐẶC SẮC: GHẸ, BỀ BỀ,
-                                    TÔM CÀNG SEN, ỐC HƯƠNG, CÁ HỒI,
-                                    DIMSUM,…KHÔNG GIAN: - Phong cách Hồng Kông -
-                                    Sức chứa: 500 khách CHỖ ĐỂ XE: - Xe ô tô:
-                                    Tầng hầm của toà nhà (Phí phụ thuộc đơn vị
-                                    trông giữ xe) - Xe máy: Tầng hầm của toà nhà
-                                    (Phí phụ thuộc đơn vị trông giữ xe) ĐIỂM ĐẶC
-                                    TRƯNG: Buffet hải sản hơn 200 món, quầy line
-                                    rộng rãi, phục vụ liên tục.
-                                </div>
-                            </div>
-                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
-                                <h2 className="py-1 text-[20px] font-semibold">
-                                    Quy định
-                                </h2>
-                                <div className="text-sm">
-                                    PHÙ HỢP:Đặt tiệc, liên hoan, tụ họp bạn bè,
-                                    gia đình, sinh nhậtMÓN ĐẶC SẮC: GHẸ, BỀ BỀ,
-                                    TÔM CÀNG SEN, ỐC HƯƠNG, CÁ HỒI,
-                                    DIMSUM,…KHÔNG GIAN: - Phong cách Hồng Kông -
-                                    Sức chứa: 500 khách CHỖ ĐỂ XE: - Xe ô tô:
-                                    Tầng hầm của toà nhà (Phí phụ thuộc đơn vị
-                                    trông giữ xe) - Xe máy: Tầng hầm của toà nhà
-                                    (Phí phụ thuộc đơn vị trông giữ xe) ĐIỂM ĐẶC
-                                    TRƯNG: Buffet hải sản hơn 200 món, quầy line
-                                    rộng rãi, phục vụ liên tục.
-                                </div>
-                            </div>
-                            <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
-                                <h2 className="py-1 text-[20px] font-semibold">
-                                    Quy định
-                                </h2>
-                                <div className="text-sm">
-                                    PHÙ HỢP:Đặt tiệc, liên hoan, tụ họp bạn bè,
-                                    gia đình, sinh nhậtMÓN ĐẶC SẮC: GHẸ, BỀ BỀ,
-                                    TÔM CÀNG SEN, ỐC HƯƠNG, CÁ HỒI,
-                                    DIMSUM,…KHÔNG GIAN: - Phong cách Hồng Kông -
-                                    Sức chứa: 500 khách CHỖ ĐỂ XE: - Xe ô tô:
-                                    Tầng hầm của toà nhà (Phí phụ thuộc đơn vị
-                                    trông giữ xe) - Xe máy: Tầng hầm của toà nhà
-                                    (Phí phụ thuộc đơn vị trông giữ xe) ĐIỂM ĐẶC
-                                    TRƯNG: Buffet hải sản hơn 200 món, quầy line
-                                    rộng rãi, phục vụ liên tục.
+
+                                <div className="flex flex-col gap-2 mt-5">
+                                    <span className="text-sm flex gap-2 font-semibold border-b pb-2">
+                                        Nhận xét của khách hàng:{" "}
+                                        <p className="font-medium">
+                                            ({reviewComments?.length} nhận xét)
+                                        </p>
+                                    </span>
+
+                                    <div className="flex flex-col gap-2">
+                                        {reviewComments?.map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex flex-col gap-2 border-b py-1"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold">
+                                                        {item.fullName}
+                                                    </span>
+                                                    <span className="text-sm text-gray-500">
+                                                        {formatDate(
+                                                            item.createdDate
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <Rating
+                                                    readOnly
+                                                    fractions={1}
+                                                    value={item.rating}
+                                                    size="xs"
+                                                />
+                                                <div className="text-sm">
+                                                    {item.content}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <ModalAlert
+                isModalOpen={isModalOpen}
+                alertContent={alertContent}
+                handleCancel={handleCancel}
+            />
         </section>
     );
 }
-

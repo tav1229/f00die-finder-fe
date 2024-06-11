@@ -1,6 +1,47 @@
 import Navigation from "./Navigation";
 import { FaBook } from "react-icons/fa";
+import {
+    reservationsByMonth,
+    distinctUserCount,
+    totalReservations,
+} from "../../apis/restaurantOwnerDashboard";
+import { useEffect, useState } from "react";
+import ColumnChart from "../../components/Chart/ColumnChart";
+
 export default function Owner() {
+    const [reservations, setReservations] = useState([]);
+    const [totalUsers, setTotalUsers] = useState([]);
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        reservationsByMonth().then((response) => {
+            setReservations(response.data);
+        });
+
+        distinctUserCount().then((response) => {
+            setTotalUsers(response.data);
+        });
+
+        totalReservations().then((response) => {
+            setTotal(response.data);
+        });
+    }, []);
+
+    const data = () => {
+        const result = Object.keys(reservations).map((key) => {
+            return {
+                x: `Tháng ${key}`,
+                y: reservations[key],
+            };
+        });
+        return result;
+    };
+
+    function getValueForCurrentMonth(data) {
+        const currentMonth = new Date().getMonth() + 1; // getMonth() trả về tháng từ 0-11, nên cần +1
+        return data[currentMonth];
+    }
+
     return (
         <section className="flex justify-center bg-[#EEEEEE] w-full">
             <div className="grid grid-cols-5 gap-4 w-full p-4 max-w-[1280px] min-h-screen">
@@ -20,7 +61,7 @@ export default function Owner() {
                                     Tổng số đơn đặt bàn
                                 </h3>
                                 <p className="text-xl font-bold text-white">
-                                    100
+                                    {total?.totalReservations}
                                 </p>
                             </div>
                         </div>
@@ -31,10 +72,10 @@ export default function Owner() {
                             </div>
                             <div className="col-span-3 flex flex-col gap-1 py-4">
                                 <h3 className="text-base font-medium text-white">
-                                    Tổng số đơn đặt bàn trong tháng
+                                    Tổng số đơn đặt bàn trong tháng này
                                 </h3>
                                 <p className="text-xl font-bold text-white">
-                                    10
+                                    {getValueForCurrentMonth(reservations)}
                                 </p>
                             </div>
                         </div>
@@ -48,13 +89,18 @@ export default function Owner() {
                                     Tổng số đơn chấp thuận
                                 </h3>
                                 <p className="text-xl font-bold text-white">
-                                    7
+                                    {totalUsers?.distinctUserCount}
                                 </p>
                             </div>
                         </div>
-
-
                     </aside>
+
+                    <div className="w-full h-[400px]">
+                        <ColumnChart
+                            title="Số lượng đơn đặt bàn mỗi tháng"
+                            data={data()}
+                        />
+                    </div>
                 </div>
             </div>
         </section>

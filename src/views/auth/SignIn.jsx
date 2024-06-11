@@ -1,23 +1,41 @@
-import { Search } from "lucide-react";
+import { Search, LoaderCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../apis/auth/login";
-import { useState, useEffect, Bounce } from "react";
-import { toast } from "react-toastify";
+import { useState } from "react";
+import { toast, Bounce } from "react-toastify";
+import { useAuthStore } from "../../storages/auth";
+import { checkExpiration } from "../../utils/checkExpiration";
+
 export default function SignIn() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const { isExpired, setIsExpired } = useAuthStore();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = async () => {
+    const handleLogin = async (e) => {
+        e.preventDefault();
         const data = {
             email: email,
             password: password,
         };
+        setIsLoading(true);
         const response = await login(data);
-        if (response) {
+        if (!response.status) {
+            console.log("response", response)
             localStorage.setItem("access-token", response.accessToken);
+            localStorage.setItem(
+                "accessTokenExpiryTime",
+                response.accessTokenExpiryTime
+            );
             localStorage.setItem("refresh-token", response.refreshToken);
+            localStorage.setItem(
+                "refreshTokenExpiryTime",
+                response.refreshTokenExpiryTime
+            );
             localStorage.setItem("role", JSON.stringify(response.role));
+            const isExpired = checkExpiration();
+            setIsExpired(isExpired);
             toast.success("Đăng nhập thành công", {
                 position: "top-center",
                 autoClose: 1998,
@@ -30,7 +48,7 @@ export default function SignIn() {
                 transition: Bounce,
             });
             switch (response.role) {
-                case 0: 
+                case 0:
                     navigate("/admin");
                     break;
                 case 1:
@@ -43,7 +61,7 @@ export default function SignIn() {
                     navigate("/sign-in");
             }
         } else {
-            toast.error("Sai tài khoản hoặc mật khẩu", {
+            toast.error(response.message, {
                 position: "top-center",
                 autoClose: 1998,
                 hideProgressBar: false,
@@ -55,6 +73,7 @@ export default function SignIn() {
                 transition: Bounce,
             });
         }
+        setIsLoading(false);
     };
 
     return (
@@ -77,27 +96,40 @@ export default function SignIn() {
                 <h1 className="text-xl font-medium uppercase text-center mb-6">
                     Đăng nhập thành viên F00die Finder
                 </h1>
-                <form className="flex flex-col w-[600px] gap-2">
+                <form className="flex flex-col w-[600px] gap-2" onSubmit={handleLogin}>
                     <input
                         placeholder="Email"
                         type="email"
+                        required
                         className=" border border-[#CCCCCC] h-14 outline-none text-gray-700 font-medium text-sm block w-full px-5"
                         onChange={(e) => setEmail(e.target.value)}
                     />
                     <input
                         placeholder="Mật khẩu"
                         type="password"
+                        required
                         className=" border border-[#CCCCCC] h-14 outline-none text-gray-700 font-medium text-sm block w-full px-5 mt-3"
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <button
-                        type="button"
-                        className="bg-[#D02028] text-white font-medium h-10 text-sm mt-8"
-                        onClick={handleLogin}
-                    >
-                        Đăng nhập
-                    </button>
+                    {
+                        isLoading ? (
+                            <button
+                                type="button"
+                                className="bg-[#D02028] text-white font-medium h-10 contrast-75 flex items-center justify-center gap-1 text-sm mt-8"
+                                disabled
+                            >
+                                <LoaderCircle className="animate-spin w-5 h-5 "/> Đang tải...
+                            </button>
+                        ) : (
+                            <button
+                                type="submit"
+                                className="bg-[#D02028] text-white font-medium h-10 text-sm mt-8"
+                            >
+                                Đăng nhập
+                            </button>
+                        )
+                    }
                     <Link className="font-medium text-sm hover:underline">
                         Quên mật khẩu?
                     </Link>

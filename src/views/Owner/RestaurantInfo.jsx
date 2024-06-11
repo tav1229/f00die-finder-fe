@@ -1,9 +1,22 @@
 import Navigation from "./Navigation";
-import { useState } from "react";
-import { Image, Upload, Button } from "antd";
+import { useState, useEffect } from "react";
+import { Image, Upload, Button, message } from "antd";
 import Img from "../../assets/images/bg.png";
 import { Select, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { getCustomerType } from "@/apis/type/customerType";
+import { getCuisineType } from "@/apis/type/cuisineType";
+import { getServingType } from "../../apis/type/servingType";
+import { getPriceRangePerPerson } from "../../apis/type/priceRangePerPerson";
+import { getProvinceOrCity, getDistrict, getWard } from "@/apis/location";
+import { getAdditionalService } from "../../apis/type/additionalService";
+import ImageUpload from "../../components/ImageUpload";
+import {
+    getMyRestaurant,
+    createRestaurant,
+    updateRestaurant,
+} from "../../apis/restaurant";
+import AtomDropdown from "@/components/Atoms/AtomDropdown";
 
 const options = [];
 for (let i = 10; i < 36; i++) {
@@ -13,89 +26,284 @@ for (let i = 10; i < 36; i++) {
     });
 }
 
-const handleChange = (value) => {
-    console.log(`selected ${value}`);
-};
 
-const getBase64 = (file) =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-    });
+const days = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 export default function BookingManagement() {
     const [imageUrl, setImageUrl] = useState(Img);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState("");
-    const [fileList, setFileList] = useState([
-        {
-            uid: "-1",
-            name: "image.png",
-            status: "done",
-            url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-        },
-        {
-            uid: "-2",
-            name: "image.png",
-            status: "done",
-            url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-        },
-        {
-            uid: "-3",
-            name: "image.png",
-            status: "done",
-            url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-        },
-    ]);
-    const handleUpload = (file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if (reader.error) {
-                console.error(
-                    "An error occurred while reading the file:",
-                    reader.error
+    const [fileList, setFileList] = useState([]);
+    const [fileListMenu, setFileListMenu] = useState([]);
+
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [address, setAddress] = useState("");
+    const [specialDishes, setSpecialDishes] = useState("");
+    const [description, setDescription] = useState("");
+    const [note, setNote] = useState("");
+    const [capacity, setCapacity] = useState("");
+
+    const [cuisineType, setCuisineType] = useState([]);
+    const [provinceOrCity, setProvinceOrCity] = useState(null);
+    const [district, setDistrict] = useState(null);
+    const [ward, setWard] = useState(null);
+    const [servingType, setServingType] = useState([]);
+    const [customerType, setCustomerType] = useState(null);
+    const [priceRangePerPerson, setPriceRangePerPerson] = useState(null);
+    const [additionalService, setAdditionalService] = useState(null);
+
+    const [cuisineTypes, setCuisineTypes] = useState([]);
+    const [provinceOrCitys, setProvinceOrCitys] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [servingTypes, setServingTypes] = useState([]);
+    const [customerTypes, setCustomerTypes] = useState([]);
+    const [priceRangePerPersons, setPriceRangePerPersons] = useState([]);
+    const [additionalServices, setAdditionalServices] = useState([]);
+    const [isCreated, setIsCreated] = useState(false);
+    const [businessHours, setBusinessHours] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const timeOptions = [];
+    for (let hour = 0; hour < 24; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+            const timeString = `${hour.toString().padStart(2, "0")}:${minute
+                .toString()
+                .padStart(2, "0")}`;
+            const time = timeString + ":00";
+            timeOptions.push({ id: time, name: timeString });
+        }
+    }
+
+    useEffect(() => {
+        const dataBusinessHours = [];
+        for (let i = 0; i < 7; i++) {
+            dataBusinessHours.push({
+                dayOfWeek: i,
+                openTime: "00:00:00",
+                closeTime: "00:00:00",
+            });
+        }
+        setBusinessHours(dataBusinessHours);
+
+        const fetchMyRestaurant = async () => {
+            try {
+                const response = await getMyRestaurant();
+                setIsCreated(true);
+
+                setName(response.name);
+                setPhone(response.phone);
+                setAddress(response.location.address);
+                setProvinceOrCity(response.provinceOrCity.id);
+                setDistrict(response.district.id);
+                setWard(response.wardOrCommune.id);
+
+                setCuisineType(
+                    response.cuisineTypes.map((cuisineType) => cuisineType.id)
                 );
-            } else {
-                setImageUrl(reader.result);
+                setServingType(
+                    response.servingTypes.map((servingType) => servingType.id)
+                );
+                setCustomerType(
+                    response.customerTypes.map(
+                        (customerType) => customerType.id
+                    )
+                );
+                setPriceRangePerPerson(response.priceRangePerPerson?.id);
+                setCapacity(response.capacity);
+                setSpecialDishes(response.specialDishes);
+                setDescription(response.description);
+                setNote(response.note);
+
+                setAdditionalService(
+                    response.additionalServices.map(
+                        (additionalService) => additionalService.id
+                    )
+                );
+                if (response.businessHours.length > 0) {
+                    setBusinessHours(response.businessHours);
+                }
+
+                setFileList(response.restaurantImages);
+                setFileListMenu(response.menuImages);
+            } catch (error) {
+                console.error(
+                    `Error in fetchMyRestaurant request: ${error.message}`
+                );
             }
         };
 
-        reader.readAsDataURL(file);
+        fetchMyRestaurant();
+    }, []);
+    useEffect(() => {
+        const fetchCuisineTypes = async () => {
+            try {
+                const response = await getCuisineType();
+                setCuisineTypes([...response.data]);
+            } catch (error) {
+                console.error(
+                    `Error in fetchCuisineTypes request: ${error.message}`
+                );
+            }
+        };
 
-        // Prevent upload
-        return false;
+        const fetchCustomerTypes = async () => {
+            try {
+                const response = await getCustomerType();
+                setCustomerTypes([...response.data]);
+            } catch (error) {
+                console.error(
+                    `Error in fetchCustomerTypes request: ${error.message}`
+                );
+            }
+        };
+
+        const fetchProvinceOrCitys = async () => {
+            try {
+                const response = await getProvinceOrCity();
+                setProvinceOrCitys([...response.data]);
+            } catch (error) {
+                console.error(
+                    `Error in fetchProvinceOrCitys request: ${error.message}`
+                );
+            }
+        };
+
+        const fetchServingTypes = async () => {
+            try {
+                const response = await getServingType();
+                setServingTypes([...response.data]);
+            } catch (error) {
+                console.error(
+                    `Error in fetchServingTypes request: ${error.message}`
+                );
+            }
+        };
+
+        const fetchPriceRangePerPersons = async () => {
+            try {
+                const response = await getPriceRangePerPerson();
+                setPriceRangePerPersons([...response.data]);
+            } catch (error) {
+                console.error(
+                    `Error in fetchPriceRangePerPersons request: ${error.message}`
+                );
+            }
+        };
+
+        const fetchAdditionalServices = async () => {
+            try {
+                const response = await getAdditionalService();
+                setAdditionalServices([...response.data]);
+                console.log("cairespose: ", response.data);
+            } catch (error) {
+                console.error(
+                    `Error in fetchAdditionalServices request: ${error.message}`
+                );
+            }
+        };
+
+        fetchCuisineTypes();
+        fetchCustomerTypes();
+        fetchProvinceOrCitys();
+        fetchServingTypes();
+        fetchPriceRangePerPersons();
+        fetchAdditionalServices();
+    }, []);
+
+    useEffect(() => {
+        const fetchDistricts = async (provinceOrCityId) => {
+            setDistricts([]);
+            try {
+                if (!provinceOrCityId) return;
+                const response = await getDistrict(provinceOrCityId);
+                setDistricts([...response.data]);
+            } catch (error) {
+                // console.error(
+                //     `Error in fetchDistricts request: ${error.message}`
+                // );
+            }
+        };
+
+        fetchDistricts(provinceOrCity);
+    }, [provinceOrCity]);
+
+    useEffect(() => {
+        const fetchWards = async (districtId) => {
+            setWards([]);
+            // setWard("");
+            try {
+                if (!districtId) return;
+                const response = await getWard(districtId);
+                setWards([...response.data]);
+                // setWard("");
+            } catch (error) {
+                // console.error(`Error in fetchWards request: ${error.message}`);
+            }
+        };
+
+        fetchWards(district);
+    }, [district]);
+
+    const handleChangeServings = (value) => {
+        setServingType(value);
     };
-    const handlePreview = async (file) => {
-        console.log("111111111111111111")
-        if (!file.url && !file.preview) {
-            file.preview = await getBase64(file.originFileObj);
+    const handleChangeCuisines = (value) => {
+        setCuisineType(value);
+        console.log("cuisineType change", cuisineType);
+    };
+    const handleChangePriceRangePerPersons = (value) => {
+        setPriceRangePerPerson(value);
+    };
+    const handleChangeCustomerTypes = (value) => {
+        setCustomerType(value);
+    };
+    const handleChangeProvinceOrCitys = (value) => {
+        setProvinceOrCity(value);
+    };
+    const handleChangeDistricts = (value) => {
+        setDistrict(value);
+    };
+    const handleChangeWards = (value) => {
+        setWard(value);
+    };
+    const handleChangeAdditionalServices = (value) => {
+        setAdditionalService(value);
+    };
+
+    const handleOnSubmit = async (e) => {
+        e.preventDefault();
+        const dataSend = {
+            name: name,
+            phone: phone,
+            priceRangePerPerson: priceRangePerPerson,
+            capacity: capacity,
+            specialDishes: specialDishes,
+            description: description,
+            note: note,
+            cuisineTypes: cuisineType,
+            servingTypes: servingType,
+            customerTypes: customerType,
+            address: address,
+            ward: ward,
+            additionalServices: additionalService,
+            businessHours: businessHours,
+        };
+
+        try {
+            if (isCreated) {
+                await updateRestaurant(dataSend);
+                message.success("Cập nhật thông tin nhà hàng thành công!");
+            } else {
+                await createRestaurant(dataSend);
+                message.success("Tạo nhà hàng thành công!");
+            }
+        } catch (error) {
+            message.error("Có lỗi xảy ra: " + error.message);
         }
-        setPreviewImage(file.url || file.preview);
-        setPreviewOpen(true);
     };
-    const handleChangeList = ({ fileList: newFileList }) => {
-        setFileList(newFileList);
-        console.log("newFileList", newFileList)
-    }
-    const uploadButton = (
-        <button
-            style={{
-                border: 0,
-                background: "none",
-            }}
-            type="button"
-        >
-            <PlusOutlined />
-            <div
-                style={{
-                    marginTop: 8,
-                }}
-            >
-                Upload
-            </div>
-        </button>
-    );
+
     return (
         <section className="flex justify-center bg-[#EEEEEE] w-full">
             <div className="grid grid-cols-5 gap-4 w-full p-4 max-w-[1280px] min-h-screen">
@@ -108,8 +316,11 @@ export default function BookingManagement() {
                     </h1>
 
                     <aside className="w-full py-5">
-                        <form className="flex flex-col gap-2 w-full">
-                            <div className="flex items-center gap-10">
+                        <form
+                            onSubmit={handleOnSubmit}
+                            className="flex flex-col gap-2 w-full"
+                        >
+                            {/* <div className="flex items-center gap-10">
                                 <Image
                                     width="100px"
                                     height="60px"
@@ -122,7 +333,10 @@ export default function BookingManagement() {
                                         beforeUpload={handleUpload}
                                         showUploadList={false}
                                     >
-                                        <button type="button" className="px-4 py-2 border border-gray-300 hover:text-[#d02028] hover:border-[#d02028] rounded-sm">
+                                        <button
+                                            type="button"
+                                            className="px-4 py-2 border border-gray-300 hover:text-[#d02028] hover:border-[#d02028] rounded-sm"
+                                        >
                                             Cập nhật Logo nhà hàng
                                         </button>
                                     </Upload>
@@ -131,7 +345,7 @@ export default function BookingManagement() {
                                         tối ưu 100x60 pixel.
                                     </p>
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className="flex flex-col gap-1 pt-5 w-full">
                                 <label
@@ -144,7 +358,9 @@ export default function BookingManagement() {
                                     id="name"
                                     placeholder="Tên nhà hàng"
                                     type="text"
+                                    value={name}
                                     className="border border-[#CCCCCC] rounded-sm h-10 outline-none text-gray-700 font-medium text-sm block min-w-full px-5 resize-y"
+                                    onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
 
@@ -159,7 +375,9 @@ export default function BookingManagement() {
                                     id="phone"
                                     placeholder="Số điện thoại"
                                     type="text"
+                                    value={phone}
                                     className="border border-[#CCCCCC] rounded-sm h-10 outline-none text-gray-700 font-medium text-sm block min-w-full px-5 resize-y"
+                                    onChange={(e) => setPhone(e.target.value)}
                                 />
                             </div>
 
@@ -180,10 +398,27 @@ export default function BookingManagement() {
                                             width: "100%",
                                         }}
                                         placeholder="Please select"
-                                        defaultValue={["a10", "c12"]}
-                                        onChange={handleChange}
-                                        options={options}
+                                        value={servingType}
+                                        onChange={handleChangeServings}
+                                        options={servingTypes.map(
+                                            (servingType) => ({
+                                                label: servingType.name,
+                                                value: servingType.id,
+                                            })
+                                        )}
                                     />
+                                    {/* <MultiSelect
+                                        checkIconPosition="right"
+                                        searchable
+                                        data={servingTypes?.map(
+                                            (servingType) => ({
+                                                value: servingType.id,
+                                                label: servingType.name,
+                                            })
+                                        )}
+                                        value={servingType}
+                                        onChange={handleChangeServings}
+                                    /> */}
                                 </div>
                                 <div className="flex flex-col gap-1 pt-1">
                                     <label
@@ -201,9 +436,14 @@ export default function BookingManagement() {
                                             width: "100%",
                                         }}
                                         placeholder="Please select"
-                                        defaultValue={["a10", "c12"]}
-                                        onChange={handleChange}
-                                        options={options}
+                                        value={cuisineType}
+                                        onChange={handleChangeCuisines}
+                                        options={cuisineTypes?.map(
+                                            (cuisineType) => ({
+                                                label: cuisineType.name,
+                                                value: cuisineType.id,
+                                            })
+                                        )}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1 pt-1">
@@ -214,7 +454,6 @@ export default function BookingManagement() {
                                         Dịch vụ khác
                                     </label>
                                     <Select
-                                        id="additionalServices"
                                         mode="multiple"
                                         className="h-10"
                                         allowClear
@@ -222,10 +461,31 @@ export default function BookingManagement() {
                                             width: "100%",
                                         }}
                                         placeholder="Please select"
-                                        defaultValue={["a10", "c12"]}
-                                        onChange={handleChange}
-                                        options={options}
+                                        value={additionalService}
+                                        onChange={
+                                            handleChangeAdditionalServices
+                                        }
+                                        options={additionalServices?.map(
+                                            (additional) => ({
+                                                label: additional.name,
+                                                value: additional.id,
+                                            })
+                                        )}
                                     />
+                                    {/* <MultiSelect
+                                        checkIconPosition="right"
+                                        searchable
+                                        data={additionalServices?.map(
+                                            (additionalService) => ({
+                                                value: additionalService.id,
+                                                label: additionalService.name,
+                                            })
+                                        )}
+                                        value={additionalService}
+                                        onChange={
+                                            handleChangeAdditionalServices
+                                        }
+                                    /> */}
                                 </div>
                             </div>
 
@@ -240,8 +500,12 @@ export default function BookingManagement() {
                                     <input
                                         id="capacity"
                                         placeholder="Sức chứa"
-                                        type="text"
+                                        type="number"
+                                        value={capacity}
                                         className="border border-[#CCCCCC] rounded-sm h-10 outline-none text-gray-700 font-medium text-sm block min-w-full px-5 resize-y"
+                                        onChange={(e) =>
+                                            setCapacity(e.target.value)
+                                        }
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1 pt-1">
@@ -259,9 +523,16 @@ export default function BookingManagement() {
                                             width: "100%",
                                         }}
                                         placeholder="Please select"
-                                        defaultValue={"a10"}
-                                        onChange={handleChange}
-                                        options={options}
+                                        value={priceRangePerPerson}
+                                        onChange={
+                                            handleChangePriceRangePerPersons
+                                        }
+                                        options={priceRangePerPersons.map(
+                                            (priceRange) => ({
+                                                label: priceRange.name,
+                                                value: priceRange.id,
+                                            })
+                                        )}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1 pt-1">
@@ -280,9 +551,88 @@ export default function BookingManagement() {
                                             width: "100%",
                                         }}
                                         placeholder="Please select"
-                                        defaultValue={["a10", "c12"]}
-                                        onChange={handleChange}
-                                        options={options}
+                                        value={customerType}
+                                        onChange={handleChangeCustomerTypes}
+                                        options={customerTypes.map(
+                                            (customerType) => ({
+                                                label: customerType.name,
+                                                value: customerType.id,
+                                            })
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="flex flex-col gap-1 pt-1">
+                                    <label
+                                        htmlFor="priceRangePerPerson"
+                                        className="min-w-[140px] font-medium text-sm"
+                                    >
+                                        Tỉnh/Thành phố
+                                    </label>
+                                    <Select
+                                        id="provinceOrCity"
+                                        className="h-10"
+                                        allowClear
+                                        style={{
+                                            width: "100%",
+                                        }}
+                                        placeholder="Please select"
+                                        value={provinceOrCity}
+                                        onChange={handleChangeProvinceOrCitys}
+                                        options={provinceOrCitys.map(
+                                            (provinceOrCity) => ({
+                                                label: provinceOrCity.name,
+                                                value: provinceOrCity.id,
+                                            })
+                                        )}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1 pt-1">
+                                    <label
+                                        htmlFor="priceRangePerPerson"
+                                        className="min-w-[140px] font-medium text-sm"
+                                    >
+                                        Quận/Huyện
+                                    </label>
+                                    <Select
+                                        id="district"
+                                        className="h-10"
+                                        allowClear
+                                        style={{
+                                            width: "100%",
+                                        }}
+                                        placeholder="Please select"
+                                        value={district}
+                                        onChange={handleChangeDistricts}
+                                        options={districts.map((district) => ({
+                                            label: district.name,
+                                            value: district.id,
+                                        }))}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1 pt-1">
+                                    <label
+                                        htmlFor="priceRangePerPerson"
+                                        className="min-w-[140px] font-medium text-sm"
+                                    >
+                                        Phường/Xã
+                                    </label>
+                                    <Select
+                                        id="ward"
+                                        className="h-10"
+                                        allowClear
+                                        style={{
+                                            width: "100%",
+                                        }}
+                                        placeholder="Please select"
+                                        value={ward}
+                                        onChange={handleChangeWards}
+                                        options={wards.map((ward) => ({
+                                            label: ward.name,
+                                            value: ward.id,
+                                        }))}
                                     />
                                 </div>
                             </div>
@@ -299,7 +649,9 @@ export default function BookingManagement() {
                                     placeholder="Địa chỉ nhà hàng"
                                     rows="2"
                                     type="text"
+                                    value={address}
                                     className="border border-[#CCCCCC] rounded-sm outline-none text-gray-700 font-medium text-sm block min-w-full px-5"
+                                    onChange={(e) => setAddress(e.target.value)}
                                 />
                             </div>
 
@@ -315,8 +667,12 @@ export default function BookingManagement() {
                                     rows="3"
                                     placeholder="Món ăn đặc biệt"
                                     type="text"
+                                    value={specialDishes}
                                     className="border border-[#CCCCCC] rounded-sm outline-none text-gray-700 font-medium text-sm block min-w-full px-5"
-                                ></textarea>
+                                    onChange={(e) =>
+                                        setSpecialDishes(e.target.value)
+                                    }
+                                />
                             </div>
 
                             <div className="flex flex-col gap-1 pt-1 w-full">
@@ -331,7 +687,11 @@ export default function BookingManagement() {
                                     rows="5"
                                     placeholder="Món ăn đặc biệt"
                                     type="text"
+                                    value={description}
                                     className="border border-[#CCCCCC] rounded-sm outline-none text-gray-700 font-medium text-sm block min-w-full px-5"
+                                    onChange={(e) =>
+                                        setDescription(e.target.value)
+                                    }
                                 />
                             </div>
 
@@ -347,38 +707,86 @@ export default function BookingManagement() {
                                     rows="3"
                                     placeholder="Món ăn đặc biệt"
                                     type="text"
+                                    value={note}
                                     className="border border-[#CCCCCC] rounded-sm outline-none text-gray-700 font-medium text-sm block min-w-full px-5"
+                                    onChange={(e) => setNote(e.target.value)}
                                 ></textarea>
                             </div>
 
-                            <div className="flex flex-col gap-1 pt-1 w-full">
-                                <h3 className="min-w-[140px] font-medium text-sm">Ảnh review nhà hàng (Tối đa 6)</h3>
-                                <Upload
-                                    accept="image/*"
-                                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                                    listType="picture-card"
-                                    fileList={fileList}
-                                    onPreview={handlePreview}
-                                    onChange={handleChangeList}
-                                >
-                                    {fileList.length >= 6 ? null : uploadButton}
-                                </Upload>
-                                {previewImage && (
-                                    <Image
-                                        wrapperStyle={{
-                                            display: "none",
-                                        }}
-                                        preview={{
-                                            visible: previewOpen,
-                                            onVisibleChange: (visible) =>
-                                                setPreviewOpen(visible),
-                                            afterOpenChange: (visible) =>
-                                                !visible && setPreviewImage(""),
-                                        }}
-                                        src={previewImage}
-                                    />
-                                )}
+                            <div className="flex flex-col gap-3 mt-2 text-sm">
+                                <h5>Thời gian hoạt động</h5>
+                                {businessHours?.map((businessHour, index) => (
+                                    <div
+                                        className="flex items-center gap-2"
+                                        key={index}
+                                    >
+                                        <span className="w-[80px]">
+                                            {days[businessHour.dayOfWeek]}:
+                                        </span>
+                                        <span>Giờ bắt đầu:</span>
+                                        <AtomDropdown
+                                            value={businessHour.openTime}
+                                            onChange={(value) => {
+                                                const newBusinessHours = [
+                                                    ...businessHours,
+                                                ];
+                                                newBusinessHours[
+                                                    index
+                                                ].openTime = value;
+                                                setBusinessHours(
+                                                    newBusinessHours
+                                                );
+                                            }}
+                                            options={timeOptions}
+                                        />
+                                        <span className="ml-10">
+                                            Giờ kết thúc:
+                                        </span>
+                                        <AtomDropdown
+                                            value={businessHour.closeTime}
+                                            onChange={(value) => {
+                                                const newBusinessHours = [
+                                                    ...businessHours,
+                                                ];
+                                                newBusinessHours[
+                                                    index
+                                                ].closeTime = value;
+                                                setBusinessHours(
+                                                    newBusinessHours
+                                                );
+                                            }}
+                                            options={timeOptions}
+                                        />
+                                    </div>
+                                ))}
                             </div>
+
+                            <div className="flex flex-col gap-1 pt-1 w-full">
+                                <h3 className="min-w-[140px] font-medium text-sm">
+                                    Ảnh review nhà hàng (Tối đa 6)
+                                </h3>
+                                <ImageUpload
+                                    fileList={fileList}
+                                    setFileList={setFileList}
+                                    fieldName="restaurantImages"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1 pt-1 w-full">
+                                <h3 className="min-w-[140px] font-medium text-sm">
+                                    Ảnh Menu nhà hàng (Tối đa 6)
+                                </h3>
+                                <ImageUpload
+                                    fileList={fileListMenu}
+                                    setFileList={setFileListMenu}
+                                    fieldName="menuImages"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="bg-[#D02028] text-white font-medium h-10 w-full rounded-md text-sm mt-4"
+                            >
+                                Xác nhận
+                            </button>
                         </form>
                     </aside>
                 </div>

@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { baseUrl } from '../config';
+
+
 const baseApi = async (method, path, data) => {
   const url = `${baseUrl}/${path}`; // Thay thế bằng URL API của bạn
   const token = localStorage.getItem('access-token'); // Lấy access token từ localStorage
-  console.log("hello: ", token)
 
   const options = {
     method: method,
@@ -24,11 +25,16 @@ const baseApi = async (method, path, data) => {
 
   try {
     const response = await axios(options);
-    return response.data;
+    return {...response.data, status: response.status};
   } catch (error) {
-    console.error(`Error in ${method} request to ${url}: ${error.message}`);
-    throw error;
+    if (error.response) {
+      const errorMessage = error.response.data.Error[0].Message;
+      return { status: error.response.status, message: errorMessage };
+    } else {
+      return error.message; // Trả về message để có thể sử dụng ở nơi khác nếu cần
+    }
   }
 };
 
 export default baseApi;
+

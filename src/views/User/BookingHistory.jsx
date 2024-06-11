@@ -2,9 +2,98 @@ import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import UserNavigation from "./UserNavigation";
 import BookingHistoryCard from "../../components/BookingHistoryCard";
-import { useState } from "react";
+import { getMyReservation, getReservation } from "../../apis/reservation";
+import { useEffect, useState } from "react";
+import NoData from "../../assets/NoData";
+import { Pagination } from "@mantine/core";
+import ModalBookingDetail from "../../components/ModalBookingDetail";
+
 export default function BookingHistory() {
-    const [activeTab, setActiveTab] = useState("pending");
+    const [activeTab, setActiveTab] = useState(0);
+    const [reservations, setReservations] = useState([]);
+    const [reservation, setReservation] = useState({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [meta, setMeta] = useState({
+        pageSize: 1,
+        currentPage: 1,
+        totalPages: 1,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                const response = await getMyReservation(5, 1, 0);
+                setReservations(response.data);
+                setMeta(response.meta);
+                console.log("meta: ", response.meta, meta);
+            } catch (error) {
+                console.error(
+                    `Error in fetchReservations request: ${error.message}`
+                );
+            }
+        };
+
+        fetchReservations();
+    }, []);
+
+    const filterReservations = async (status, pageNumber = 1) => {
+        setActiveTab(status);
+        try {
+            const response = await getMyReservation(5, pageNumber, status);
+            console.log("response", response, response.data.length === 0);
+            setReservations(response.data);
+            setMeta(response.meta);
+        } catch (error) {
+            console.error(
+                `Error in filterReservations request: ${error.message}`
+            );
+        }
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        filterReservations(activeTab, page);
+    };
+
+    function convertDateTime(dateTimeString) {
+        const dateTime = new Date(dateTimeString);
+
+        const date = dateTime.getDate();
+        const month = dateTime.getMonth() + 1; // getMonth() trả về từ 0 (tháng 1) đến 11 (tháng 12)
+        const year = dateTime.getFullYear();
+
+        const hours = dateTime.getHours();
+        const minutes = dateTime.getMinutes();
+
+        // Đảm bảo rằng ngày, tháng, giờ và phút luôn có 2 chữ số
+        const formattedDate = `${date.toString().padStart(2, "0")}/${month
+            .toString()
+            .padStart(2, "0")}/${year}`;
+        const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}`;
+
+        return { date: formattedDate, time: formattedTime };
+    }
+
+    const handleClickReservation = async (reservationId) => {
+        try {
+            const response = await getReservation(reservationId);
+            const { date, time } = convertDateTime(response.data.time);
+            setReservation({
+                ...response.data,
+                time: time,
+                date: date,
+            });
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error(
+                `Error in handleClickReservation request: ${error.message}`
+            );
+        }
+    };
+
     return (
         <section className="w-full flex flex-col items-center justify-start h-auto min-h-screen bg-[#EEEEEE]">
             <div className="w-full flex flex-col py-4 px-7 bg-[#F7F6F4]">
@@ -32,7 +121,7 @@ export default function BookingHistory() {
                     </Link>{" "}
                     {">"}{" "}
                     <p className="font-bold text-[#D02028]">
-                        Thông tin tài khoản
+                        Lịch sử đặt chỗ
                     </p>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
@@ -41,61 +130,89 @@ export default function BookingHistory() {
                         <nav className="flex flex-row gap-6 h-14 bg-white text-sm font-medium py-1 px-2">
                             <button
                                 className={`flex justify-center items-center px-1 ${
-                                    activeTab === "pending"
+                                    activeTab === 0
                                         ? "border-b-2 border-[#d02028]"
                                         : ""
                                 } `}
-                                onClick={() => setActiveTab("pending")}
+                                onClick={() => filterReservations(0)}
                             >
                                 Chờ xác nhận
                             </button>
                             <button
                                 className={`flex justify-center items-center px-1 ${
-                                    activeTab === "accepted"
+                                    activeTab === 1
                                         ? "border-b-2 border-[#d02028]"
                                         : ""
                                 } `}
-                                onClick={() => setActiveTab("accepted")}
+                                onClick={() => filterReservations(1)}
                             >
                                 Đã tiếp nhận
                             </button>
                             <button
                                 className={`flex justify-center items-center px-1 ${
-                                    activeTab === "completed"
+                                    activeTab === 2
                                         ? "border-b-2 border-[#d02028]"
                                         : ""
                                 } `}
-                                onClick={() => setActiveTab("completed")}
+                                onClick={() => filterReservations(2)}
                             >
-                                Hoàn thành
+                                Đã từ chối
                             </button>
                             <button
                                 className={`flex justify-center items-center px-1 ${
-                                    activeTab === "cancelled"
+                                    activeTab === 3
                                         ? "border-b-2 border-[#d02028]"
                                         : ""
                                 } `}
-                                onClick={() => setActiveTab("cancelled")}
+                                onClick={() => filterReservations(3)}
                             >
                                 Đã hủy
                             </button>
                             <button
                                 className={`flex justify-center items-center px-1 ${
-                                    activeTab === "all"
+                                    activeTab === -1
                                         ? "border-b-2 border-[#d02028]"
                                         : ""
                                 } `}
-                                onClick={() => setActiveTab("all")}
+                                onClick={() => filterReservations(-1)}
                             >
                                 Tất cả
                             </button>
                         </nav>
-                        <BookingHistoryCard status={activeTab} />
-                        <BookingHistoryCard status={activeTab} />
-                        <BookingHistoryCard status={activeTab} />
+                        {reservations?.map((reservation, index) => (
+                            <BookingHistoryCard
+                                key={index}
+                                reservation={reservation}
+                                status={reservation.reservationStatus}
+                                onClick={() =>
+                                    handleClickReservation(reservation.id)
+                                }
+                            />
+                        ))}
+                        {(reservations?.length === 0 || !reservations) && (
+                            <div className="flex items-center justify-center w-full h-[300px]">
+                                <NoData />
+                            </div>
+                        )}
+                        {meta?.totalPages > 0 && (
+                            <div className="flex justify-center w-full">
+                                <Pagination
+                                    total={meta.totalPages}
+                                    page={currentPage}
+                                    onChange={handlePageChange}
+                                    color="#d02028"
+                                    radius="xl"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+            <ModalBookingDetail
+                isModalOpen={isModalOpen}
+                handleCancel={() => setIsModalOpen(false)}
+                bookingDetail={reservation}
+            />
         </section>
     );
 }

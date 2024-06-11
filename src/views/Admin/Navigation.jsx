@@ -21,16 +21,20 @@ export default function Navigation() {
                     </NavLink>
 
                     <NavLink
-                        to={"/user-management"}
-                        className={({ isActive }) => (isActive ? style : style)}
+                        to={"/admin/restaurant-management"}
+                        className={({ isActive }) =>
+                            isActive ? `${style} bg-[#F01B23] text-white` : style
+                        }
                     >
                         <Users className="mr-2 h-4 w-4" />
                         Quản lý nhà hàng
                     </NavLink>
 
                     <NavLink
-                        to={"/company-management"}
-                        className={({ isActive }) => (isActive ? style : style)}
+                        to={"/admin/user-management"}
+                        className={({ isActive }) =>
+                            isActive ? `${style} bg-[#F01B23] text-white` : style
+                        }
                     >
                         <Building2 className="mr-2 h-4 w-4" />
                         Quản lý người dùng

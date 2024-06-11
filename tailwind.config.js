@@ -17,6 +17,11 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        polli: ["polli-fonts-regular", "sans-serif"],
+        "mono-bold": ["mono-fonts-bold", "sans-serif"],
+        "polli-bold": ["polli-fonts-bold", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

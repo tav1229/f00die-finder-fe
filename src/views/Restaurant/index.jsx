@@ -1,67 +1,80 @@
 import { Search, ListFilter } from "lucide-react";
 import AtomDropdown from "@/components/Atoms/AtomDropdown";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
+import { useRestaurantStore } from "@/storages/restaurant";
+import RestaurantCard from "../../components/RestaurantCard";
+import { getRestaurants } from "../../apis/restaurant";
+import { Pagination } from "@mantine/core";
 
-const danhSachNhaHang = [
-    {
-        key: "nha_hang_1",
-        value: "Nhà hàng Hai Bà Trưng",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/c9ae2aea-7b45-4001-a0ff-30c1c040fa9e.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-    {
-        key: "nha_hang_2",
-        value: "Nhà hàng Lẩu Bò",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/7d7762bf-77d7-4a11-a3c1-c27e547464bc.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-    {
-        key: "nha_hang_3",
-        value: "Nhà hàng Cơm niêu Hồng Phúc",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/0f049c11-7b95-4af6-9dc7-727921820ef3.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-    {
-        key: "nha_hang_4",
-        value: "Nhà hàng Hương Việt",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/f7cdfe9e-525f-4a6c-8d92-980a04f53ca0.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-    {
-        key: "nha_hang_5",
-        value: "Buffet Hàn Quốc Seoul Garden",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/02d1e571-5866-4385-a9b0-cc454ee82edf.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-    {
-        key: "nha_hang_6",
-        value: "Nhà hàng Lẩu Thái Lan",
-        img: "https://storage.pasgo.com.vn/PasGoGianHang/a8bd33d4-4be9-4d4a-b1ca-51532eff92e1.webp?Width=250&Type=webp",
-        rating: 4,
-        address: "123 Hai Bà Trưng, Quận 1, TP.HCM",
-        note: "Giảm giá 10%",
-    },
-];
 export default function Restaurant() {
+    // const { restaurants, setRestaurants } = useRestaurantStore();
+    const [restaurants, setRestaurants] = useState([]);
+    const [searchParams] = useSearchParams();
+    const [meta, setMeta] = useState({
+        pageSize: 1,
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 1,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        const handleFilter = async () => {
+            // Lấy các tham số từ URL
+            const provinceOrCity = searchParams.get("provinceOrCityId");
+            const district = searchParams.get("districtId");
+            const servingType = searchParams.get("servingType");
+            const cuisineType = searchParams.get("cuisineType");
+            const customerType = searchParams.get("customerType");
+            const priceRangePerPerson = searchParams.get("priceRangePerPerson");
+            const searchValue = searchParams.get("searchValue");
+
+            const response = await getRestaurants({
+                provinceOrCityId: provinceOrCity,
+                districtId: district,
+                servingType: servingType,
+                cuisineType: cuisineType,
+                customerType: customerType,
+                priceRangePerPerson: priceRangePerPerson,
+                searchValue: searchValue,
+            });
+            setRestaurants(response.data);
+            setMeta(response.meta);
+        };
+
+        handleFilter();
+    }, []);
+
+    const handlePageChange = (page) => {
+        const fetchRestaurants = async () => {
+            try {
+                const response = await getRestaurants(
+                    {
+                        provinceOrCityId: searchParams.get("provinceOrCityId"),
+                        districtId: searchParams.get("districtId"),
+                        servingType: searchParams.get("servingType"),
+                        cuisineType: searchParams.get("cuisineType"),
+                        customerType: searchParams.get("customerType"),
+                        priceRangePerPerson: searchParams.get(
+                            "priceRangePerPerson"
+                        ),
+                        searchValue: searchParams.get("searchValue"),
+                    },
+                    page
+                );
+                setRestaurants(response.data);
+                setMeta(response.meta);
+            } catch (error) {
+                console.error(
+                    `Error in fetchRestaurants request: ${error.message}`
+                );
+            }
+        };
+
+        fetchRestaurants();
+    };
     return (
         <section className="flex flex-col w-full max-w-[1280px]">
             <div className="w-full flex bg-[#F7F6F4] flex-col gap-5 py-5 px-7">
@@ -103,7 +116,7 @@ export default function Restaurant() {
                                     Tìm thấy:
                                 </span>
                                 <span className="text-[#D02028] font-semibold">
-                                    (17) điểm đến
+                                    ({meta?.totalCount ?? 0}) điểm đến
                                 </span>
                             </div>
                             <div className="flex gap-3 items-center">
@@ -113,14 +126,14 @@ export default function Restaurant() {
                                 <AtomDropdown
                                     className="w-[207px] h-[34px] rounded-none text-gray-600"
                                     options={[
-                                        { value: "1", label: "Mặc định" },
+                                        { id: "1", name: "Mặc định" },
                                         {
-                                            value: "2",
-                                            label: "Giá thấp đến cao",
+                                            id: "2",
+                                            name: "Giá thấp đến cao",
                                         },
                                         {
-                                            value: "3",
-                                            label: "Giá cao đến thấp",
+                                            id: "3",
+                                            name: "Giá cao đến thấp",
                                         },
                                     ]}
                                     value="1"
@@ -128,39 +141,48 @@ export default function Restaurant() {
                             </div>
                         </div>
                         <div className="w-full border-t border-gray-300"></div>
-                        <div className="w-full grid grid-cols-4 gap-4">
-                            {danhSachNhaHang.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className=" bg-white shadow rounded-md"
-                                >
-                                    <div className="relative w-[282px] h-[282px]">
-                                        <img
-                                            src={item.img}
-                                            className="w-full h-[282px] object-cover rounded-md"
-                                        />
-                                        <div className='absolute bottom-0 w-full py-2 rounded-b-md flex flex-col bg-[rgba(0,0,0,0.6)] items-center'>
-                                            <h2 className="text-base font-medium text-white">{item.value}</h2>
-                                            <div className="flex gap-1 items-center">
-                                                <span className="text-sm text-[#D02028] font-semibold">
-                                                    {item.rating}
-                                                </span>
-                                                <img
-                                                    src="https://img.icons8.com/fluent/48/000000/star.png"
-                                                    className="w-4 h-4"
-                                                />
-                                            </div>
-                                            <div className="text-sm font-medium text-gray-300">{item.address}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-center justify-center p-2 gap-1">
-                                        <h2 className="font-semibold text-[#D02028]">{item.note}</h2>
-                                        <span className="text-sm font-medium text-gray-500">Chuyên món hải sản</span>
-                                        <button className="py-[8px] px-4 font-medium border hover:bg-[#D02028] hover:text-white rounded-md">Đặt chỗ ngay</button>
-                                    </div>
-                                </div>
+                        <div className="w-full grid grid-cols-5 gap-4">
+                            {restaurants?.map((item, index) => (
+                                // <Link
+                                //     to={`/restaurant/${item.id}`}
+                                //     key={index}
+                                //     className=" bg-white shadow rounded-md"
+                                // >
+                                //     <div className="relative max-w-[282px] h-[282px]">
+                                //         <img
+                                //             src={item.images[0]}
+                                //             className="w-full h-[282px] object-cover rounded-md"
+                                //         />
+                                //         <div className='absolute bottom-0 w-full py-2 rounded-b-md flex flex-col bg-[rgba(0,0,0,0.6)] items-center'>
+                                //             <h2 className="text-base font-medium text-white">{item.name}</h2>
+                                //             <div className="flex gap-1 items-center">
+                                //                 <span className="text-sm text-[#D02028] font-semibold">
+                                //                     {item.rating}
+                                //                 </span>
+                                //                 <img
+                                //                     src="https://img.icons8.com/fluent/48/000000/star.png"
+                                //                     className="w-4 h-4"
+                                //                 />
+                                //             </div>
+                                //             <div className="text-sm font-medium text-gray-300">{item.location.address}</div>
+                                //         </div>
+                                //     </div>
+                                //     <div className="flex flex-col items-center justify-center p-2 gap-1">
+                                //         <h2 className="font-semibold text-[#D02028]">{item?.note}</h2>
+                                //         <span className="text-sm font-medium text-gray-500">{item?.cuisineTypes[0].name}</span>
+                                //         <button className="py-[8px] px-4 font-medium border hover:bg-[#D02028] hover:text-white rounded-md">Đặt chỗ ngay</button>
+                                //     </div>
+                                // </Link>
+                                <RestaurantCard key={index} restaurant={item} />
                             ))}
                         </div>
+                        <Pagination
+                            total={meta.totalPages}
+                            page={currentPage}
+                            onChange={handlePageChange}
+                            color="#d02028"
+                            radius="xl"
+                        />
                     </div>
                 </div>
             </div>

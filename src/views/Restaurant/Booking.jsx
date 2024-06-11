@@ -1,18 +1,162 @@
 import { Search, ListFilter } from "lucide-react";
-import AtomDropdown from "@/components/Atoms/AtomDropdown";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { DatePicker } from "antd";
-import {
-    ChevronRight,
-    MapPin,
-    Flag,
-    Clock,
-    Baby,
-    UserRound,
-} from "lucide-react";
+import { useBookingStore } from "../../storages/booking";
+import { getRestaurant } from "../../apis/restaurant";
+import { createRevervation } from "../../apis/reservation";
+import { checkExpiration } from "../../utils/checkExpiration";
+import ModalAlert from "../../components/ModalAlert";
+import BookingForm from "../../components/BookingForm";
+import ModalBookingDetail from "../../components/ModalBookingDetail";
 
 export default function Booking() {
+    // const { booking, setBooking } = useBookingStore();
+    const navigate = useNavigate();
+    const [booking, setBooking] = useState({
+        numberOfAdults: 0,
+        numberOfChildren: 0,
+        time: new Date(),
+    });
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [note, setNote] = useState("");
+    const { id } = useParams();
+    const [timeFormatted, setTimeFormatted] = useState("");
+    const [restaurant, setRestaurant] = useState({});
+    const [isClickedUpdate, setIsClickedUpdate] = useState(false);
+    const [isConfirm, setIsConfirm] = useState(false);
+    
+    const [bookingDetail, setBookingDetail] = useState({});
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [alertContent, setAlertContent] = useState({
+        title: "",
+        content: "",
+        status: "",
+    });
+
+    const daysOfWeek = [
+        "Chủ Nhật",
+        "Thứ Hai",
+        "Thứ Ba",
+        "Thứ Tư",
+        "Thứ Năm",
+        "Thứ Sáu",
+        "Thứ Bảy",
+    ];
+
+    useEffect(() => {
+        const bookingData = JSON.parse(localStorage.getItem("booking"));
+        const dateTime = new Date(
+            `${bookingData?.date}T${bookingData?.time}:00.626Z`
+        );
+        const isoString = dateTime.toISOString();
+        setTimeFormatted(isoString);
+
+        if (bookingData) {
+            setBooking(bookingData);
+        }
+    }, []);
+
+    useEffect(() => {
+        getRestaurant(id).then((response) => {
+            setRestaurant(response);
+        });
+    }, [id]);
+
+    const handleClickNext = (e) => {
+        e.preventDefault();
+        setBookingDetail({
+            ...booking,
+            restaurantId: id,
+            customerName: name,
+            customerPhone: phone,
+            // email: email,
+            note: note,
+        });
+        setIsConfirm(true);
+    };
+
+    const handleOnSubmit = async (event) => {
+        event.preventDefault();
+        const token = localStorage.getItem("access-token");
+        if (checkExpiration()) {
+            setIsModalOpen(true);
+            setAlertContent({
+                title: "Hết phiên đăng nhập",
+                content: "Vui lòng đăng nhập để đặt chỗ",
+                status: "warning",
+            });
+            return;
+        }
+        if (!token) {
+            setIsModalOpen(true);
+            setAlertContent({
+                title: "Vui lòng đăng nhập",
+                content: "Vui lòng đăng nhập để đặt chỗ",
+                status: "warning",
+            });
+            return;
+        }
+        const dataSend = {
+            ...booking,
+            restaurantId: id,
+            customerName: name,
+            customerPhone: phone,
+            customerEmail: email,
+            note: note,
+        };
+        const response = await createRevervation(dataSend);
+        if (response.data) {
+            setIsModalOpen(true);
+            setAlertContent({
+                title: "Đặt chỗ thành công",
+                content:
+                    "Bạn đã đặt chỗ thành công. Vui lòng chờ nhân viên xác nhận!",
+                status: "success",
+            });
+        } else {
+            setIsModalOpen(true);
+            setAlertContent({
+                title: "Đặt chỗ thất bại",
+                content: "Vui lòng thử lại sau!",
+                status: "error",
+            });
+        }
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        if (alertContent.status === "success") {
+            navigate("/user/booking-history");
+        }
+    };
+
+    function formatDate(isoString) {
+        const date = new Date(isoString);
+
+        const dayName = daysOfWeek[date.getUTCDay()];
+        const day = date.getUTCDate().toString().padStart(2, "0");
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+        const year = date.getUTCFullYear();
+        const hours = date.getUTCHours().toString().padStart(2, "0");
+        const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+
+        return `${dayName}, ngày ${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+    const handleClickBooking = (booking) => {
+        const dateTime = new Date(
+            `${booking?.date}T${booking?.time}:00.626Z`
+        );
+        const isoString = dateTime.toISOString();
+        setTimeFormatted(isoString);
+        setIsClickedUpdate(false);
+        setBooking(booking);
+    };
+
     return (
         <section className="w-full flex justify-center h-auto bg-[#EEEEEE]">
             <div className="flex flex-col w-full max-w-[1280px] bg-[#EEEEEE]">
@@ -33,9 +177,12 @@ export default function Booking() {
 
                 <div className="flex flex-col gap-4 px-7 py-5 bg-[#F2F2F7]">
                     <div className="flex w-full uppercase bg-white rounded-lg text-xl font-medium text-[#333333] p-5">
-                        {`ĐẶT CHỖ ĐẾN "BUFFET HẢI SẢN & DIMSUM CỬU VÂN LONG - THÁI HÀ"`}
+                        {restaurant?.name}
                     </div>
-                    <form className="grid grid-cols-3 gap-4">
+                    <form
+                        className="grid grid-cols-3 gap-4"
+                        onSubmit={handleClickNext}
+                    >
                         <div className="col-span-2 flex flex-col gap-3 bg-white rounded-lg p-5">
                             <div className="py-2">
                                 <h1 className="text-base font-medium">
@@ -53,12 +200,16 @@ export default function Booking() {
                                 <input
                                     type="text"
                                     id="name"
+                                    required
                                     className="border border-[#CCCCCC] h-[34px] outline-none text-[#555555] text-sm rounded-sm block w-full p-2"
                                     placeholder="Nhập tên liên lạc"
+                                    onChange={(event) =>
+                                        setName(event.target.value)
+                                    }
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-2 py-1">
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col col-span-2 gap-1">
                                     <label
                                         htmlFor="phone"
                                         className="text-sm text-[#333333] font-medium"
@@ -71,11 +222,15 @@ export default function Booking() {
                                     <input
                                         type="text"
                                         id="phone"
+                                        required
                                         className="border border-[#CCCCCC] h-[34px] outline-none text-[#555555] text-sm rounded-sm block w-full p-2"
                                         placeholder="Nhập số điện thoại"
+                                        onChange={(event) =>
+                                            setPhone(event.target.value)
+                                        }
                                     />
                                 </div>
-                                <div className="flex flex-col gap-1">
+                                {/* <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="email"
                                         className="text-sm text-[#333333] font-medium"
@@ -88,10 +243,14 @@ export default function Booking() {
                                     <input
                                         type="email"
                                         id="email"
+                                        required
                                         className="border border-[#CCCCCC] h-[34px] outline-none text-[#555555] text-sm rounded-sm block w-full p-2"
                                         placeholder="Nhập email"
+                                        onChange={(event) =>
+                                            setEmail(event.target.value)
+                                        }
                                     />
-                                </div>
+                                </div> */}
                             </div>
                             <div className="flex flex-col gap-1 py-1">
                                 <label
@@ -105,9 +264,15 @@ export default function Booking() {
                                     rows={2}
                                     className="border border-[#CCCCCC] outline-none text-[#555555] text-sm rounded-sm block w-full p-2"
                                     placeholder="Nhập ghi chú"
+                                    onChange={(event) =>
+                                        setNote(event.target.value)
+                                    }
                                 />
                             </div>
-                            <button className="h-10 flex items-center justify-center w-[200px] text-lg bg-[#d02028] text-white font-medium rounded-md">
+                            <button
+                                type="submit"
+                                className="h-10 flex items-center justify-center w-[200px] text-lg bg-[#d02028] text-white font-medium rounded-md"
+                            >
                                 Tiếp tục
                             </button>
                             <span className="text-sm text-[#808080] font-medium mb-4">
@@ -126,27 +291,52 @@ export default function Booking() {
                                     <button
                                         className="h-9 flex items-center justify-center text-sm px-3 bg-[#d02028] text-white font-medium rounded-md"
                                         type="button"
+                                        onClick={() =>
+                                            setIsClickedUpdate(!isClickedUpdate)
+                                        }
                                     >
-                                        Chỉnh sửa
+                                        {isClickedUpdate ? "Quay lại" : "Chỉnh Sửa"}
                                     </button>
                                 </div>
-                                <div className="px-4 py-5 gap-5 flex flex-col">
-                                    <span className="text-sm pb-5 font-medium border-b">
-                                        Buffet Hải Sản & Dimsum Cửu Vân Long -
-                                        Thái Hà
-                                    </span>
-                                    <span className="text-sm pb-5 font-medium border-b">
-                                        2 người lớn, 0 trẻ em
-                                    </span>
-                                    <span className="text-sm pb-5 font-medium border-b">
-                                        Thứ bảy, ngày 25/05/2024 18:15
-                                    </span>
-                                </div>
+                                {isClickedUpdate ? (
+                                    <BookingForm
+                                        id={id}
+                                        booking={booking}
+                                        onBooking={handleClickBooking}
+                                    />
+                                ) : (
+                                    <div className="px-4 py-5 gap-5 flex flex-col">
+                                        <span className="text-sm pb-5 font-medium border-b">
+                                            {restaurant?.name}
+                                        </span>
+                                        <span className="text-sm pb-5 font-medium border-b">
+                                            {booking?.numberOfAdults ?? 0} người
+                                            lớn,{" "}
+                                            {booking?.numberOfChildren ?? 0} trẻ
+                                            em
+                                        </span>
+                                        <span className="text-sm pb-5 font-medium border-b">
+                                            {timeFormatted &&
+                                                formatDate(timeFormatted)}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
+            <ModalAlert
+                isModalOpen={isModalOpen}
+                alertContent={alertContent}
+                handleCancel={handleCancel}
+            />
+            <ModalBookingDetail
+                isModalOpen={isConfirm}
+                bookingDetail={bookingDetail}
+                handleCancel={() => setIsConfirm(false)}
+                onSubmit={handleOnSubmit}
+            />
         </section>
     );
 }
