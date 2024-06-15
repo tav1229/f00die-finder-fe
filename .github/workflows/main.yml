@@ -41,5 +41,6 @@ jobs:
           host: ${{ env.REMOTE_HOST }}
           username: ${{ env.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
+          source: "dist/"
           target: "${{ env.DEPLOY_PATH }}"
+          strip_components: 1
