@@ -1,0 +1,45 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_USER: ${{ vars.SSH_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Replace baseUrl in config.js
+        run: |
+          sed -i "s|export const baseUrl = .*|export const baseUrl = '${{ vars.BASE_URL }}';|" src/config.js
+        shell: bash
+
+      - name: Build project
+        run: npm install && npm run build
+
+      - name: Clean up existing files in deployment directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.REMOTE_HOST }}
+          username: ${{ env.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf ${{ env.DEPLOY_PATH }}/*
+
+      - name: Copy build directory to remote server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.REMOTE_HOST }}
+          username: ${{ env.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "${{ env.DEPLOY_PATH }}"
