@@ -1,11 +1,12 @@
 import User from "../../views/User";
-import DefaultLayout from "../../layouts/DefaultLayout";
+// import DefaultLayout from "../../layouts/DefaultLayout";
+import UserLayout from "../../layouts/UserLayout";
 import PasswordChange from "../../views/User/PasswordChange";
 import BookingHistory from "../../views/User/BookingHistory";
 import RestaurantSaved from "../../views/User/RestaurantSaved";
 export default {
     path: "/user",
-    element: <DefaultLayout />,
+    element: <UserLayout />,
     children: [
         {
             path: "",
@@ -22,6 +23,6 @@ export default {
         {
             path: "restaurant-saved",
             element: <RestaurantSaved />,
-        }
+        },
     ],
 };

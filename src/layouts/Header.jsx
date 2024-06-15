@@ -125,7 +125,7 @@ export default function Header() {
         <header className="flex sticky top-0 z-10 justify-between items-center bg-[#D02028] w-full h-10 px-8">
             <div className="flex gap-10">
                 <NavLink
-                    to={isRole === 0 ? "/admin" : isRole === 1 ? "/owner" : "/"}
+                    to={isRole === 0 && !checkExpiration() ? "/admin" : isRole === 1 && checkExpiration() ? "/owner" : "/"}
                     className="flex items-center"
                 >
                     <img src={Logo} alt="logo" className="w-32" />

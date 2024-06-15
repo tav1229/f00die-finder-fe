@@ -21,6 +21,7 @@ import {
     createReviewComment,
 } from "../../apis/reviewComment";
 import ModalAlert from "@/components/ModalAlert";
+import { Skeleton } from '@mantine/core';
 
 const daysOfWeek = [
     "Chủ Nhật",
@@ -274,7 +275,7 @@ export default function Detail() {
             ref={inputRef}
         >
             <div className="flex flex-col w-full max-w-[1280px] bg-[#EEEEEE]">
-                <div className="w-full flex flex-col py-4 px-7">
+                {/* <div className="w-full flex flex-col py-4 px-7">
                     <div className="search  flex justify-center items-center w-3/4 gap-4">
                         <input
                             type="text"
@@ -287,7 +288,7 @@ export default function Detail() {
                             <p>Tìm kiếm</p>
                         </button>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="w-full flex flex-col justify-center px-10 items-center ">
                     <div className="w-full max-w-[1208px] flex flex-col gap-5">
@@ -334,9 +335,15 @@ export default function Detail() {
                         <div className="grid grid-cols-3 gap-4 ">
                             <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
                                 <div className="w-full flex justify-between">
-                                    <h1 className="py-1 text-[28px] font-bold">
-                                        {restaurant?.name}
-                                    </h1>
+                                    {
+                                        restaurant?.name ? (
+                                            <h1 className="py-1 text-[28px] font-bold">
+                                                {restaurant?.name}
+                                            </h1>
+                                        ) : (
+                                            <Skeleton height={30} width={250} />
+                                        )
+                                    }
                                     <Tooltip
                                         title={
                                             isFavorite
@@ -358,23 +365,46 @@ export default function Detail() {
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <MapPin className="w-5 h-5" />
-                                    <span className="font-medium">
+                                    {
+                                        restaurant?.location ? (
+                                            <span className="font-medium">
+                                                {restaurant?.location?.address},{" "}
+                                                {restaurant?.wardOrCommune?.name},{" "}
+                                                {restaurant?.district?.name} ,{" "}
+                                                {restaurant?.provinceOrCity?.name}
+                                            </span>
+                                        ) : (
+                                            <Skeleton height={20} width={300} />
+                                        )
+                                    }
+                                    {/* <span className="font-medium">
                                         {restaurant?.location?.address},{" "}
                                         {restaurant?.wardOrCommune?.name},{" "}
                                         {restaurant?.district?.name} ,{" "}
                                         {restaurant?.provinceOrCity?.name}
-                                    </span>
+                                    </span> */}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Flag className="w-5 h-5" />
                                     <span className="font-medium">
                                         Loại hình:
                                     </span>
-                                    <span className="text-[#D02028] font-medium">
+                                    {
+                                        restaurant?.cuisineTypes ? (
+                                            <span className="text-[#D02028] font-medium">
+                                                {restaurant?.cuisineTypes
+                                                    ?.map((item, index) => item.name)
+                                                    .join(", ")}
+                                            </span>
+                                        ) : (
+                                            <Skeleton height={20} width={200} />
+                                        )
+                                    }
+                                    {/* <span className="text-[#D02028] font-medium">
                                         {restaurant?.cuisineTypes
                                             ?.map((item, index) => item.name)
                                             .join(", ")}
-                                    </span>
+                                    </span> */}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Clock className="w-5 h-5" />
@@ -562,7 +592,7 @@ export default function Detail() {
                                         />
                                     </div>
                                     <Textarea
-                                        placeholder="Autosize with 4 rows max"
+                                        placeholder="Nhập bình luận của bạn..."
                                         autosize
                                         minRows={3}
                                         maxRows={5}

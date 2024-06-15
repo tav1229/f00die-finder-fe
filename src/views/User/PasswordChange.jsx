@@ -5,7 +5,7 @@ import UserNavigation from "./UserNavigation";
 export default function PasswordChange() {
     return (
         <section className="w-full flex flex-col items-center justify-start h-auto min-h-screen bg-[#EEEEEE]">
-            <div className="w-full flex flex-col py-4 px-7 bg-[#F7F6F4]">
+            {/* <div className="w-full flex flex-col py-4 px-7 bg-[#F7F6F4]">
                 <div className="search  flex justify-center items-center w-3/4 gap-4">
                     <input
                         type="text"
@@ -18,7 +18,7 @@ export default function PasswordChange() {
                         <p>Tìm kiếm</p>
                     </button>
                 </div>
-            </div>
+            </div> */}
 
             <div className="w-full max-w-[1280px] flex flex-col px-12">
                 <div className="text-sm flex gap-1 w-full items-center h-16 px-2">

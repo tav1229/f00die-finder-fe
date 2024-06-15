@@ -160,7 +160,7 @@ export default function Booking() {
     return (
         <section className="w-full flex justify-center h-auto bg-[#EEEEEE]">
             <div className="flex flex-col w-full max-w-[1280px] bg-[#EEEEEE]">
-                <div className="w-full flex flex-col py-4 px-7">
+                {/* <div className="w-full flex flex-col py-4 px-7">
                     <div className="search  flex justify-center items-center w-3/4 gap-4">
                         <input
                             type="text"
@@ -173,7 +173,7 @@ export default function Booking() {
                             <p>Tìm kiếm</p>
                         </button>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="flex flex-col gap-4 px-7 py-5 bg-[#F2F2F7]">
                     <div className="flex w-full uppercase bg-white rounded-lg text-xl font-medium text-[#333333] p-5">

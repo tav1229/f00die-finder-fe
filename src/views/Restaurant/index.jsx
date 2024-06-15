@@ -45,7 +45,7 @@ export default function Restaurant() {
         };
 
         handleFilter();
-    }, []);
+    }, [searchParams]);
 
     const handlePageChange = (page) => {
         const fetchRestaurants = async () => {
@@ -77,7 +77,7 @@ export default function Restaurant() {
     };
     return (
         <section className="flex flex-col w-full max-w-[1280px]">
-            <div className="w-full flex bg-[#F7F6F4] flex-col gap-5 py-5 px-7">
+            {/* <div className="w-full flex bg-[#F7F6F4] flex-col gap-5 py-5 px-7">
                 <div className="search  flex justify-center items-center w-3/4 gap-4">
                     <input
                         type="text"
@@ -89,7 +89,7 @@ export default function Restaurant() {
                         <p>Tìm kiếm</p>
                     </button>
                 </div>
-            </div>
+            </div> */}
 
             <div className="w-full flex flex-col justify-center items-center bg-[#F7F6F4]">
                 <div className="w-full max-w-[1200px] flex flex-col gap-5">
