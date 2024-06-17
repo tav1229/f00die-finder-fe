@@ -1,5 +1,25 @@
 import baseApi from './baseApi';
 
+export const getRecommendedRestaurants = async (pageNumber=1, pageSize=10) => {
+    try {
+        const response = await baseApi('GET', `Restaurant/recommended?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+        return response;
+    } catch (error) {
+        console.error(`Error in getRecommendedRestaurants request: ${error.message}`);
+        throw error;
+    }
+}
+
+export const getPublicRecommendedRestaurants = async (pageNumber=1, pageSize=10) => {
+    try {
+        const response = await baseApi('GET', `Restaurant/public-recommended?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+        return response;
+    } catch (error) {
+        console.error(`Error in getPublicRecommendedRestaurants request: ${error.message}`);
+        throw error;
+    }
+}
+
 export const getRestaurant = async (restaurantId) => {
     try {
         const response = await baseApi('GET', `Restaurant/${restaurantId}`);

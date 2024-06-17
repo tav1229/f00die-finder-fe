@@ -4,7 +4,7 @@ import  DefaultImg from "../assets/images/bg.png";
 export default function RestaurantCard({ restaurant }) {
     // function get first 3 cuisines 
     const cuisines = (restaurant?.cuisineTypes || []).slice(0, 3);
-    const restaur = cuisines.map((cuisine) => cuisine.name).join(", ");
+    const restaurantCuisines = cuisines.map((cuisine) => cuisine.name).join(", ");
     return (
         <Link
             to={`/restaurant/${restaurant.id}`}
@@ -24,7 +24,7 @@ export default function RestaurantCard({ restaurant }) {
             </span>
             <span className="text-sm line-clamp-2">
                 {/* {restaurant?.specialDishes} */}
-                {restaur}
+                {restaurantCuisines}
             </span>
             <div
                 to={`/restaurant/${restaurant.id}`}

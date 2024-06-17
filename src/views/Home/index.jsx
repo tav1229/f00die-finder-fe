@@ -19,16 +19,17 @@ import { getCuisineType } from "@/apis/type/cuisineType";
 import { getServingType } from "../../apis/type/servingType";
 import { getPriceRangePerPerson } from "../../apis/type/priceRangePerPerson";
 import { getProvinceOrCity, getDistrict } from "@/apis/location";
-import { getRestaurants, getMySavedRestaurant } from "@/apis/restaurant";
+import { getRestaurants, getMySavedRestaurant, getRecommendedRestaurants, getPublicRecommendedRestaurants } from "@/apis/restaurant";
 import { useRestaurantStore } from "@/storages/restaurant";
 import RestaurantCard from "../../components/RestaurantCard";
+import { checkExpiration } from "../../utils/checkExpiration";
 
 export default function Home() {
     const navigate = useNavigate();
 
     const { setRestaurants } = useRestaurantStore();
 
-    const [restaurantsPopular, setRestaurantsPopular] = useState([]);
+    const [restaurantsRecommended, setRestaurantsRecommended] = useState([]);
     const [restaurantsNew, setRestaurantsNew] = useState([]);
     const [restaurantsServiceType, setRestaurantsServiceType] = useState([]);
     const [restaurantsCuisineType, setRestaurantsCuisineType] = useState([]);
@@ -53,15 +54,18 @@ export default function Home() {
     const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
-        const fetchRestaurantsPopular = async () => {
+        const fetchRestaurantsRecommended = async () => {
             try {
-                const response = await getRestaurants({
-                    sortType: 0,
-                });
-                setRestaurantsPopular(response.data);
+                let response;
+                if (checkExpiration()) {
+                    response = await getPublicRecommendedRestaurants();
+                } else {
+                    response = await getRecommendedRestaurants();
+                }
+                setRestaurantsRecommended(response.data);
             } catch (error) {
                 console.error(
-                    `Error in fetchRestaurantsPopular request: ${error.message}`
+                    `Error in fetchRestaurantsRecommended request: ${error.message}`
                 );
             }
         };
@@ -94,7 +98,7 @@ export default function Home() {
         };
 
         fetchRestaurantsNew();
-        fetchRestaurantsPopular();
+        fetchRestaurantsRecommended();
         fetchMySavedRestaurant();
     }, []);
 
@@ -353,6 +357,10 @@ export default function Home() {
     const getCuisinesHaveIcon = () => {
         return cuisineTypes.filter((cuisine) => cuisine.iconUrl !== null);
     };
+
+    const handleGetThreeCuisineType = (cuisineType) => {
+        return cuisineType.slice(0, 3).map((cuisine) => cuisine.name).join(", ");
+    };
     return (
         <>
             <div className="w-full flex bg-[#F7F6F4] flex-col items-center gap-5 pt-4 pb-6 px-5">
@@ -497,9 +505,9 @@ export default function Home() {
                                 <CarouselItem
                                     key={index}
                                     className="flex flex-col items-center h-[142px] w-[140px] justify-center pl-1 md:basis-1/5 lg:basis-[14%] cursor-pointer group"
-                                    // onClick={() =>
-                                    //     handleFilterCuisineType(monAn.id)
-                                    // }
+                                // onClick={() =>
+                                //     handleFilterCuisineType(monAn.id)
+                                // }
                                 >
                                     <Link
                                         to={`/restaurant?cuisineType=${monAn.id}`}
@@ -527,10 +535,10 @@ export default function Home() {
 
                 <div className="flex flex-col w-full px-14 gap-3">
                     <h1 className="text-2xl font-bold">
-                        Top nhà hàng phổ biến
+                        Nhà hàng được đề xuất
                     </h1>
                     <span className="text-sm font-medium text-[#333333]">
-                        Xem ngay các địa điểm, nhà hàng phổ biến
+                        Xem ngay các địa điểm, nhà hàng được gợi ý cho bạn
                     </span>
                     <Carousel
                         className="w-full"
@@ -540,7 +548,7 @@ export default function Home() {
                         }}
                     >
                         <CarouselContent className="-ml-1 gap-2">
-                            {restaurantsPopular.length === 0 && (
+                            {restaurantsRecommended.length === 0 && (
                                 <>
                                     <CarouselItem className="flex flex-col items-start h-[340px] justify-start pl-1 md:basis-1/3 lg:basis-[21.5%]">
                                         <SkeletonRestaurantCard />
@@ -559,7 +567,8 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {restaurantsPopular.map((restaurant, index) => (
+                            {restaurantsRecommended.map((restaurant, index) => (
+
                                 <CarouselItem
                                     key={index}
                                     className="flex flex-col items-start h-[340px] justify-start pl-1 md:basis-1/3 lg:basis-[21.5%]"
@@ -585,6 +594,9 @@ export default function Home() {
                                         </span>
                                         <span className="text-sm font-bold text-[#d02028]">
                                             {restaurant.note}
+                                        </span>
+                                        <span className="text-sm line-clamp-2">
+                                            {handleGetThreeCuisineType(restaurant.cuisineTypes)}
                                         </span>
                                     </div>
                                 </CarouselItem>
