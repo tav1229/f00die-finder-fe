@@ -55,32 +55,37 @@ export default function BookingManagement() {
 
     const columns = [
         {
-            title: "Tên khách hàng",
+            title: "Tên",
             dataIndex: "customerName",
             key: "customerName",
         },
         {
-            title: "Số điện thoại",
+            title: "SĐT",
             dataIndex: "customerPhone",
             key: "customerPhone",
         },
         {
-            title: "Ngày đặt",
+            title: "Email",
+            dataIndex: "customerEmail",
+            key: "customerEmail",
+        },
+        {
+            title: "Ngày đặt trước",
             dataIndex: "date",
             key: "date",
         },
         {
-            title: "Giờ đặt",
+            title: "Giờ đặt trước",
             dataIndex: "time",
             key: "time",
         },
         {
-            title: "Người lớn",
+            title: "Số người lớn",
             dataIndex: "numberOfAdults",
             key: "numberOfAdults",
         },
         {
-            title: "Trẻ em",
+            title: "Số trẻ em",
             dataIndex: "numberOfChildren",
             key: "numberOfChildren",
         },

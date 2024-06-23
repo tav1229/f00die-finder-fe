@@ -128,7 +128,7 @@ export default function Home() {
                 setCustomerTypes([
                     {
                         id: "",
-                        name: "Loại khách hàng",
+                        name: "Kiểu khách hàng",
                     },
                     ...response.data,
                 ]);
@@ -273,20 +273,10 @@ export default function Home() {
                 try {
                     const response = await getRestaurants({
                         cuisineType: cuisineTypes[randomCuisineTypeIndex].id,
-                        pageSize: 20,
+                        pageSize: 10,
                     });
 
-                    const data = response.data;
-                    const groupedData = data.reduce(
-                        (result, value, index, array) => {
-                            if (index % 2 === 0)
-                                result.push(array.slice(index, index + 2));
-                            return result;
-                        },
-                        []
-                    );
-
-                    setRestaurantsCuisineType(groupedData);
+                    setRestaurantsCuisineType(response.data);
                 } catch (error) {
                     console.error(
                         `Error in fetchRestaurantsCuisineType request: ${error.message}`
@@ -310,40 +300,34 @@ export default function Home() {
     //     navigate("/restaurant");
     //     setRestaurants(response);
     // };
-
+    function getNameById(id, array) {
+        const item = array.find(element => element.id === id);
+        return item ? item.name : null;
+    }
     const filterQueryParams = () => {
         let query = "";
         if (provinceOrCity) {
-            query += `&provinceOrCityId=${provinceOrCity}`;
+            query += `&provinceOrCityId=${provinceOrCity}&provinceOrCityName=${getNameById(provinceOrCity, provinceOrCitys)}`;
         }
         if (district) {
-            query += `&districtId=${district}`;
+            query += `&districtId=${district}&districtName=${getNameById(district, districts)}`;
         }
         if (servingType) {
-            query += `&servingType=${servingType}`;
+            query += `&servingType=${servingType}&servingTypeName=${getNameById(servingType, servingTypes)}`;
         }
         if (cuisineType) {
-            query += `&cuisineType=${cuisineType}`;
+            query += `&cuisineType=${cuisineType}&cuisineTypeName=${getNameById(cuisineType, cuisineTypes)}`;
         }
         if (customerType) {
-            query += `&customerType=${customerType}`;
+            query += `&customerType=${customerType}&customerTypeName=${getNameById(customerType, customerTypes)}`;
         }
         if (priceRangePerPerson) {
-            query += `&priceRangePerPerson=${priceRangePerPerson}`;
+            query += `&priceRangePerPerson=${priceRangePerPerson}&priceRangePerPersonName=${getNameById(priceRangePerPerson, priceRangePerPersons)}`;
         }
         if (searchValue) {
             query += `&searchValue=${searchValue}`;
         }
         return query;
-    };
-
-    const handleSearch = async () => {
-        const response = await getRestaurants({
-            searchValue: searchValue,
-            provinceOrCityId: provinceOrCity,
-        });
-        navigate("/restaurant");
-        setRestaurants(response);
     };
 
     const handleFilterCuisineType = async (cuisineType) => {
@@ -510,7 +494,7 @@ export default function Home() {
                                 // }
                                 >
                                     <Link
-                                        to={`/restaurant?cuisineType=${monAn.id}`}
+                                        to={`/restaurant?cuisineType=${monAn.id}&cuisineTypeName=${getNameById(monAn.id, cuisineTypes)}`}
                                         // onClick={() => navigate("/restaurant")}
                                         className="flex flex-col items-center gap-1 justify-center"
                                     >
@@ -533,7 +517,7 @@ export default function Home() {
                     </Carousel>
                 </div>
 
-                <div className="flex flex-col w-full px-14 gap-3">
+                <div className="flex flex-col w-full px-14 gap-3 mb-11">
                     <h1 className="text-2xl font-bold">
                         Nhà hàng được đề xuất
                     </h1>
@@ -727,27 +711,14 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {restaurantsCuisineType?.map(
-                                (twoRestaurants, index) => (
-                                    <CarouselItem
-                                        key={index}
-                                        className="flex flex-col items-start h-auto justify-start pl-1 md:basis-1/3 lg:basis-[21.5%] cursor-pointer group"
-                                    >
-                                        {twoRestaurants.map(
-                                            (restaurant, index2) => (
-                                                <div
-                                                    key={index2}
-                                                    className="h-[370px]"
-                                                >
-                                                    <RestaurantCard
-                                                        restaurant={restaurant}
-                                                    />
-                                                </div>
-                                            )
-                                        )}
-                                    </CarouselItem>
-                                )
-                            )}
+                            {restaurantsCuisineType?.map((restaurant, index) => (
+                                <CarouselItem
+                                    key={index}
+                                    className="flex flex-col items-start h-[370px] w-[240px] justify-start pl-1 md:basis-1/4 lg:basis-1/5 "
+                                >
+                                    <RestaurantCard restaurant={restaurant} />
+                                </CarouselItem>
+                            ))}
                         </CarouselContent>
                         <CarouselPrevious className="hover:bg-[#D02028] hover:text-white" />
                         <CarouselNext className="hover:bg-[#D02028] hover:text-white" />

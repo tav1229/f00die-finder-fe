@@ -49,25 +49,24 @@ export default function ModalBookingDetail({
                             <Phone className="w-[18px] h-[18px] text-gray-500" />{" "}
                             <span>Số điện thoại:</span> <span>{bookingDetail?.customerPhone}</span>{" "}
                         </div>
-                        {/* <div className="text-sm flex items-center ml-1 gap-2 font-semibold">
+                        <div className="text-sm flex items-center ml-1 gap-2 font-semibold">
                             <Mail className="w-[18px] h-[18px] text-gray-500" />{" "}
                             <span>Email:</span> <span>{bookingDetail?.email}</span>{" "}
-                        </div> */}
+                        </div>
                         <div className="text-sm flex items-center ml-1 gap-2 font-semibold">
                             <CircleUserRound className="w-[18px] h-[18px] text-gray-500" />{" "}
                             <span>Tên liên lạc:</span> <span>{bookingDetail?.customerName}</span>{" "}
                         </div>
                     </div>
-                    <div className="col-span-2 flex items-center">
-                        <label htmlFor="note">
-                            <span className="text-sm font-semibold text-gray-800">
+                    <div className="col-span-2 flex">
+                        <label htmlFor="note" className="min-w-16">
+                            <span className="text-[15px] font-semibold text-gray-800">
                                 Ghi chú:
                             </span>
                         </label>
                         <textarea
                             id="note"
-                            className="border border-gray-300 w-full h-[100px] p-2 rounded-md focus:outline-none text-gray-800 font-semibold"
-                            placeholder="Ghi chú"
+                            className="border border-gray-300 w-full h-[100px] p-2 rounded-md focus:outline-none text-gray-400 font-semibold"
                             value={bookingDetail?.note}
                             readOnly
                         ></textarea>

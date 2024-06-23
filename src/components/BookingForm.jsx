@@ -24,8 +24,8 @@ export default function BookingForm({ id, booking, onBooking }) {
     }, []);
 
     const numbers = Array.from({ length: 200 }, (_, index) => ({
-        id: String(index + 1),
-        name: String(index + 1),
+        id: String(index),
+        name: String(index),
     }));
 
     const timeOptions = [];

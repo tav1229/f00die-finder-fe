@@ -1,5 +1,5 @@
 import { Search, ListFilter } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useBookingStore } from "../../storages/booking";
@@ -12,6 +12,7 @@ import ModalBookingDetail from "../../components/ModalBookingDetail";
 
 export default function Booking() {
     // const { booking, setBooking } = useBookingStore();
+    const ref = useRef(null)
     const navigate = useNavigate();
     const [booking, setBooking] = useState({
         numberOfAdults: 0,
@@ -58,6 +59,9 @@ export default function Booking() {
         if (bookingData) {
             setBooking(bookingData);
         }
+
+        ref.current.scrollIntoView({ behavior: "smooth", block: 'center' });
+
     }, []);
 
     useEffect(() => {
@@ -73,7 +77,7 @@ export default function Booking() {
             restaurantId: id,
             customerName: name,
             customerPhone: phone,
-            // email: email,
+            email: email,
             note: note,
         });
         setIsConfirm(true);
@@ -176,8 +180,8 @@ export default function Booking() {
                 </div> */}
 
                 <div className="flex flex-col gap-4 px-7 py-5 bg-[#F2F2F7]">
-                    <div className="flex w-full uppercase bg-white rounded-lg text-xl font-medium text-[#333333] p-5">
-                        {restaurant?.name}
+                    <div ref={ref} className="flex w-full uppercase bg-white rounded-lg text-xl font-medium text-[#333333] p-5">
+                        Đặt chỗ đến "{restaurant?.name}"
                     </div>
                     <form
                         className="grid grid-cols-3 gap-4"
@@ -209,7 +213,7 @@ export default function Booking() {
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-2 py-1">
-                                <div className="flex flex-col col-span-2 gap-1">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="phone"
                                         className="text-sm text-[#333333] font-medium"
@@ -230,7 +234,7 @@ export default function Booking() {
                                         }
                                     />
                                 </div>
-                                {/* <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-1">
                                     <label
                                         htmlFor="email"
                                         className="text-sm text-[#333333] font-medium"
@@ -250,12 +254,12 @@ export default function Booking() {
                                             setEmail(event.target.value)
                                         }
                                     />
-                                </div> */}
+                                </div>
                             </div>
                             <div className="flex flex-col gap-1 py-1">
                                 <label
                                     htmlFor="note"
-                                    className="text-sm text-[#333333] font-medium"
+                                    className=" text-[#333333] font-semibold"
                                 >
                                     Ghi chú
                                 </label>

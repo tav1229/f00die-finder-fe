@@ -112,9 +112,9 @@ export const getMySavedRestaurant = async (pageNumber=1, pageSize=10) => {
 }
 
 export const saveRestaurant = async (restaurantId) => {
-    const response = await baseApi('POST', `Restaurant/save`, restaurantId);
+    return await baseApi('POST', `Restaurant/save`, restaurantId);
 }
 
 export const unsaveRestaurant = async (restaurantId) => {
-    const response = await baseApi('POST', `Restaurant/unsave`, restaurantId);
+    return await baseApi('POST', `Restaurant/unsave`, restaurantId);
 }

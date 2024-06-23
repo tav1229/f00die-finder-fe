@@ -125,14 +125,14 @@ export default function Header() {
         <header className="flex sticky top-0 z-10 justify-between items-center bg-[#D02028] w-full h-10 px-8">
             <div className="flex gap-10">
                 <NavLink
-                    to={isRole === 0 && !checkExpiration() ? "/admin" : isRole === 1 && checkExpiration() ? "/owner" : "/"}
+                    to={isRole === 0 && !checkExpiration() ? "/admin" : isRole === 1 && !checkExpiration() ? "/owner" : "/"}
                     className="flex items-center"
                 >
                     <img src={Logo} alt="logo" className="w-32" />
                 </NavLink>
             </div>
             <div className="flex justify-center items-center gap-5">
-                {isRole === 2 && (
+                {isRole === 2 && checkExpiration() && (
                     <NavLink
                         to="/owner-sign-up"
                         className="text-white text-xs uppercase font-medium  transition-colors hover:text-white cursor-pointer"
@@ -141,9 +141,6 @@ export default function Header() {
                     </NavLink>
                 )}
                 <div className="flex justify-center items-center gap-3">
-                    <button className="bg-[#FFC522] text-white w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#FFC522]">
-                        <FaBell />
-                    </button>
 
                     <Popover
                         content={

@@ -17,6 +17,7 @@ import {
     updateRestaurant,
 } from "../../apis/restaurant";
 import AtomDropdown from "@/components/Atoms/AtomDropdown";
+import TiptapEditor from "../../components/TiptapEditor";
 
 const options = [];
 for (let i = 10; i < 36; i++) {
@@ -62,8 +63,6 @@ export default function BookingManagement() {
     const [additionalServices, setAdditionalServices] = useState([]);
     const [isCreated, setIsCreated] = useState(false);
     const [businessHours, setBusinessHours] = useState([]);
-    const [uploading, setUploading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
 
     const timeOptions = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -682,7 +681,8 @@ export default function BookingManagement() {
                                 >
                                     Mô tả nhà hàng
                                 </label>
-                                <textarea
+                                <TiptapEditor content={description} setContent={setDescription}/>
+                                {/* <textarea
                                     id="description"
                                     rows="5"
                                     placeholder="Món ăn đặc biệt"
@@ -692,7 +692,7 @@ export default function BookingManagement() {
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                />
+                                /> */}
                             </div>
 
                             <div className="flex flex-col gap-1 pt-1 w-full">

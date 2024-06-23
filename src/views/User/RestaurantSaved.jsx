@@ -83,14 +83,14 @@ export default function RestaurantSaved() {
                     </Link>{" "}
                     {">"}{" "}
                     <p className="font-bold text-[#D02028]">
-                        Nhà hàng yêu thích
+                        Danh sách nhà hàng yêu thích
                     </p>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                     <UserNavigation />
                     <div className="col-span-2 flex flex-col gap-7 bg-white py-6 px-2">
                         <h3 className="text-lg font-medium text-center mb-6 uppercase">
-                            Nhà hàng yêu thích
+                            Danh sách nhà hàng yêu thích
                         </h3>
                         <div className="flex gap-2 flex-wrap">
                             {restaurants.length > 0 ? (
@@ -102,11 +102,11 @@ export default function RestaurantSaved() {
                                     >
                                         <div className="relative">
                                             <img
-                                                src={restaurant.images[0]}
+                                                src={restaurant.image}
                                                 className="h-[240px] w-[240px] object-cover"
                                                 alt=""
                                             />
-                                            <div className="absolute w-full flex flex-col gap-1 items-center bottom-0 bg-[rgb(0,0,0,0.6)] p-2">
+                                            <div className="absolute w-full flex flex-col gap-1 items-center bottom-0 bg-[rgb(65,64,59,0.6)] p-2">
                                                 <span className="text-base text-white font-semibold truncate">
                                                     {restaurant.name}
                                                 </span>

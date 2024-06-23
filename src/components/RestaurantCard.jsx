@@ -11,7 +11,7 @@ export default function RestaurantCard({ restaurant }) {
             className="flex flex-col gap-1 max-w-[244px] min-w-[220px] max-h-[350px] pb-3 font-sans" 
         >
             <img
-                src={restaurant.images[0] || DefaultImg}
+                src={restaurant?.images[0] || DefaultImg}
                 alt=""
                 className="w-[240px] h-[144px] object-cover rounded-lg"
             />
