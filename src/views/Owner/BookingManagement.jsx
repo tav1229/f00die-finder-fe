@@ -7,7 +7,7 @@ import {
 } from "../../apis/reservation";
 
 export default function BookingManagement() {
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState(-1);
     const [reservations, setReservations] = useState([]);
     const activeButton =
         "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";

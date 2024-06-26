@@ -86,7 +86,7 @@ export default function Home() {
         const fetchMySavedRestaurant = async () => {
             try {
                 const response = await getMySavedRestaurant(1, 100);
-                const ids_saved = response.data.map(
+                const ids_saved = response.data?.map(
                     (restaurant) => restaurant.id
                 );
                 localStorage.setItem("ids_saved", JSON.stringify(ids_saved));
@@ -231,7 +231,7 @@ export default function Home() {
 
     useEffect(() => {
         // get random number in servingTypes length
-        if (servingTypes.length > 0) {
+        if (servingTypes?.length > 0) {
             let randomServingTypeIndex =
                 Math.floor(Math.random() * servingTypes.length) + 1;
 
@@ -259,7 +259,7 @@ export default function Home() {
 
     useEffect(() => {
         // get random number in cuisineTypes length
-        if (cuisineTypes.length > 0) {
+        if (cuisineTypes?.length > 0) {
             let randomCuisineTypeIndex =
                 Math.floor(Math.random() * cuisineTypes.length) + 1;
 
@@ -343,7 +343,7 @@ export default function Home() {
     };
 
     const handleGetThreeCuisineType = (cuisineType) => {
-        return cuisineType.slice(0, 3).map((cuisine) => cuisine.name).join(", ");
+        return cuisineType.slice(0, 3)?.map((cuisine) => cuisine.name).join(", ");
     };
     return (
         <>
@@ -433,7 +433,7 @@ export default function Home() {
                         }}
                     >
                         <CarouselContent className="-ml-1 gap-5">
-                            {getCuisinesHaveIcon().length === 0 && (
+                            {getCuisinesHaveIcon()?.length === 0 && (
                                 <>
                                     <CarouselItem className="flex flex-col items-center h-[142px] w-[140px] justify-center pl-1 md:basis-1/5 lg:basis-[14%] cursor-pointer group">
                                         <Skeleton
@@ -485,7 +485,7 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {getCuisinesHaveIcon().map((monAn, index) => (
+                            {getCuisinesHaveIcon()?.map((monAn, index) => (
                                 <CarouselItem
                                     key={index}
                                     className="flex flex-col items-center h-[142px] w-[140px] justify-center pl-1 md:basis-1/5 lg:basis-[14%] cursor-pointer group"
@@ -532,7 +532,7 @@ export default function Home() {
                         }}
                     >
                         <CarouselContent className="-ml-1 gap-2">
-                            {restaurantsRecommended.length === 0 && (
+                            {restaurantsRecommended?.length === 0 && (
                                 <>
                                     <CarouselItem className="flex flex-col items-start h-[340px] justify-start pl-1 md:basis-1/3 lg:basis-[21.5%]">
                                         <SkeletonRestaurantCard />
@@ -551,7 +551,7 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {restaurantsRecommended.map((restaurant, index) => (
+                            {restaurantsRecommended?.map((restaurant, index) => (
 
                                 <CarouselItem
                                     key={index}
@@ -604,7 +604,7 @@ export default function Home() {
                         }}
                     >
                         <CarouselContent className="-ml-1 gap-2">
-                            {restaurantsNew.length === 0 && (
+                            {restaurantsNew?.length === 0 && (
                                 <>
                                     <CarouselItem className="flex flex-col items-start h-[370px] w-[240px] justify-start pl-1 md:basis-1/4 lg:basis-1/5 ">
                                         <SkeletonRestaurantCard2 />
@@ -620,7 +620,7 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {restaurantsNew.map((restaurant, index) => (
+                            {restaurantsNew?.map((restaurant, index) => (
                                 <CarouselItem
                                     key={index}
                                     className="flex flex-col items-start h-[370px] w-[240px] justify-start pl-1 md:basis-1/4 lg:basis-1/5 "
@@ -651,7 +651,7 @@ export default function Home() {
                         }}
                     >
                         <CarouselContent className="-ml-1 gap-2">
-                            {restaurantsServiceType.length === 0 && (
+                            {restaurantsServiceType?.length === 0 && (
                                 <>
                                     <CarouselItem className="flex flex-col items-start h-[370px] w-[240px] justify-start pl-1 md:basis-1/4 lg:basis-1/5 ">
                                         <SkeletonRestaurantCard2 />
@@ -667,7 +667,7 @@ export default function Home() {
                                     </CarouselItem>
                                 </>
                             )}
-                            {restaurantsServiceType.map((restaurant, index) => (
+                            {restaurantsServiceType?.map((restaurant, index) => (
                                 <CarouselItem
                                     key={index}
                                     className="flex flex-col items-start h-[370px] w-[240px] justify-start pl-1 md:basis-1/4 lg:basis-1/5 "

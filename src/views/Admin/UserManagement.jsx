@@ -20,7 +20,7 @@ const statusName = (status) => {
 };
 export default function UserManagement() {
     const [users, setUsers] = useState([]);
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState(-1);
 
     const columns = [
         {
