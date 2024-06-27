@@ -282,7 +282,7 @@ export default function Booking() {
                             <span className="text-sm text-[#808080] font-medium mb-4">
                                 Khi lựa chọn “Tiếp tục” bạn đã công nhận mình đã
                                 đọc và đồng ý với các Điều khoản sử dụng và
-                                chính sách quyền riêng tư của Pasgo
+                                chính sách quyền riêng tư của f00diefinder.
                             </span>
                         </div>
 
