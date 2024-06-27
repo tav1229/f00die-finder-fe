@@ -104,6 +104,10 @@ export default function Booking() {
             });
             return;
         }
+        const time = new Date(
+            `${booking?.date}T${booking?.time}:00.626Z`
+        )
+        time.setHours(time.getHours() - 7);
         const dataSend = {
             ...booking,
             restaurantId: id,
@@ -111,6 +115,7 @@ export default function Booking() {
             customerPhone: phone,
             customerEmail: email,
             note: note,
+            time: time,
         };
         const response = await createRevervation(dataSend);
         if (response.data) {

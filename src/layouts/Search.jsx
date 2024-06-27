@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { MdLocationPin } from "react-icons/md";
 import { FaPhoneVolume } from "react-icons/fa6";
 import { getProvinceOrCity } from "@/apis/location";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 
 export default function SearchA() {
     const [searchValue, setSearchValue] = useState("");
     const [provinceOrCity, setProvinceOrCity] = useState("");
     const [provinceOrCitys, setProvinceOrCitys] = useState([]);
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         const fetchProvinceOrCitys = async () => {
@@ -29,6 +30,10 @@ export default function SearchA() {
                 );
             }
         };
+
+        if (searchParams.has("searchValue")) {
+            setSearchValue(searchParams.get("searchValue"));
+        }
 
         fetchProvinceOrCitys();
     }, []);
@@ -61,6 +66,7 @@ export default function SearchA() {
                         type="text"
                         id="default-input"
                         placeholder="Tìm kiếm nhà hàng, món ăn..."
+                        value={searchValue}
                         className="bg-gray-50 border border-[#CCCCCC] h-[34px] outline-none text-gray-700 font-medium text-sm block w-full p-2"
                         onChange={(e) => setSearchValue(e.target.value)}
                     />
