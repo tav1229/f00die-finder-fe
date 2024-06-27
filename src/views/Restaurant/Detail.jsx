@@ -102,7 +102,9 @@ export default function Detail() {
         const ids_saved = localStorage.getItem("ids_saved");
 
         if (ids_saved) {
-            console.log("ids_saved:", ids_saved);
+            if (ids_saved === "[]" || ids_saved === "undefined") {
+                return;
+            }
             const parsed_ids_saved = JSON.parse(ids_saved);
             if (parsed_ids_saved.includes(id)) {
                 setIsFavorite(true);
@@ -255,11 +257,16 @@ export default function Detail() {
                 }
                 setIsFavorite(!isFavorite);
                 const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
-                const index = ids_saved.indexOf(id);
-                if (index > -1) {
-                    ids_saved.splice(index, 1);
+                if (ids_saved?.length > 0) {
+                    const index = ids_saved.indexOf(id);
+                    if (index > -1) {
+                        ids_saved.splice(index, 1);
+                    }
+                    localStorage.setItem(
+                        "ids_saved",
+                        JSON.stringify(ids_saved)
+                    );
                 }
-                localStorage.setItem("ids_saved", JSON.stringify(ids_saved));
             } catch (error) {
                 console.error("Error unsaving restaurant:", error);
             }

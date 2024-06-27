@@ -49,8 +49,12 @@ export default function RestaurantSaved() {
             );
             setRestaurants(newRestaurants);
             const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
-            const newIds = ids_saved.filter((id) => id !== restaurantId);
-            localStorage.setItem("ids_saved", JSON.stringify(newIds));
+            if (ids_saved?.length > 0) {
+                const newIds = ids_saved.filter((id) => id !== restaurantId);
+                if (newIds.length >= 0) {
+                    localStorage.setItem("ids_saved", JSON.stringify(newIds));
+                }
+            }
         } catch (error) {
             console.error(`Error in handleUnsave request: ${error.message}`);
         }

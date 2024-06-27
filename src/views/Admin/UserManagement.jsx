@@ -2,6 +2,7 @@ import { getUsers, updateUserStatus } from "@/apis/adminDashboard";
 import { useEffect, useState } from "react";
 import Navigation from "./Navigation";
 import { Table } from "antd";
+import { Pagination } from "@mantine/core";
 
 const activeButton =
     "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
@@ -21,6 +22,13 @@ const statusName = (status) => {
 export default function UserManagement() {
     const [users, setUsers] = useState([]);
     const [activeTab, setActiveTab] = useState(-1);
+
+    const [meta, setMeta] = useState({
+        pageSize: 1,
+        currentPage: 1,
+        totalPages: 1,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
 
     const columns = [
         {
@@ -114,6 +122,7 @@ export default function UserManagement() {
             try {
                 const response = await getUsers();
                 setUsers(response.data);
+                setMeta(response.meta);
             } catch (error) {
                 console.error(`Error in users request: ${error.message}`);
             }
@@ -121,6 +130,19 @@ export default function UserManagement() {
 
         fetchUsers();
     }, []);
+
+    const handlePageChange = async (page) => {
+        try {
+            const response = await getUsers(page, 10, activeTab);
+            setUsers(response.data);
+            setMeta(response.meta);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error(
+                `Error in handlePageChange request: ${error.message}`
+            );
+        }
+    };
 
     const handleUpdateStatus = async (id, status) => {
         try {
@@ -147,6 +169,8 @@ export default function UserManagement() {
     const filterUsers = async (status) => {
         const response = await getUsers(1, 10, status);
         setUsers(response.data);
+        setMeta(response.meta);
+        setCurrentPage(1);
         setActiveTab(status);
     };
 
@@ -169,7 +193,9 @@ export default function UserManagement() {
                 </div>
 
                 <div className="col-span-4 flex flex-col rounded-md px-5">
-                    <h1 className="text-lg font-semibold">Quản lý người dùng</h1>
+                    <h1 className="text-lg font-semibold">
+                        Quản lý người dùng
+                    </h1>
                     <nav className="flex gap-3 w-full py-5">
                         <button
                             className={
@@ -204,7 +230,7 @@ export default function UserManagement() {
                             Chưa xác nhận
                         </button>
                     </nav>
-                    <aside className="w-full">
+                    <aside className="w-full bg-white">
                         <Table
                             dataSource={users?.map((restaurant) => ({
                                 ...restaurant,
@@ -213,7 +239,17 @@ export default function UserManagement() {
                             columns={columns}
                             className="overflow-auto"
                             scroll={{ x: 900 }}
+                            pagination={false}
                         />
+                        <div className="flex justify-end py-6 px-5">
+                            <Pagination
+                                total={meta.totalPages}
+                                page={currentPage}
+                                onChange={handlePageChange}
+                                color="#d02028"
+                                radius="xl"
+                            />
+                        </div>
                     </aside>
                 </div>
             </div>

@@ -2,6 +2,7 @@ import { getRestaurants, updateRestaurantStatus } from "@/apis/adminDashboard";
 import { useEffect, useState } from "react";
 import Navigation from "./Navigation";
 import { Table } from "antd";
+import { Pagination } from "@mantine/core";
 
 const activeButton =
     "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
@@ -24,6 +25,12 @@ export default function RestaurantManagement() {
     const [restaurants, setRestaurants] = useState([]);
     const [activeTab, setActiveTab] = useState(-1);
 
+    const [meta, setMeta] = useState({
+        pageSize: 1,
+        currentPage: 1,
+        totalPages: 1,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
 
     const columns = [
         {
@@ -97,6 +104,7 @@ export default function RestaurantManagement() {
             try {
                 const response = await getRestaurants();
                 setRestaurants(response.data);
+                setMeta(response.meta);
             } catch (error) {
                 console.error(
                     `Error in fetchRestaurants request: ${error.message}`
@@ -130,9 +138,24 @@ export default function RestaurantManagement() {
         console.log(id, status);
     };
 
+    const handlePageChange = async (page) => {
+        try {
+            const response = await getRestaurants(page, 10, activeTab);
+            setRestaurants(response.data);
+            setMeta(response.meta);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error(
+                `Error in handlePageChange request: ${error.message}`
+            );
+        }
+    };
+
     const filterRestaurants = async (status) => {
         const response = await getRestaurants(1, 10, status);
         setRestaurants(response.data);
+        setMeta(response.meta);
+        setCurrentPage(1);
         setActiveTab(status);
     };
 
@@ -190,19 +213,28 @@ export default function RestaurantManagement() {
                             Ngừng hoạt động
                         </button>
                     </nav>
-                    <aside className="w-full">
+                    <aside className="w-full bg-white">
                         <Table
                             dataSource={restaurants?.map((restaurant) => ({
                                 ...restaurant,
                                 createdDate: formatDate(restaurant.createdDate),
                                 // address: restaurant.location.address,
                                 // provinceOrCity: restaurant.provinceOrCity.name,
-                            }))
-                            }
+                            }))}
                             columns={columns}
                             className="overflow-auto"
                             scroll={{ x: 900 }}
+                            pagination={false}
                         />
+                        <div className="flex justify-end py-6 px-5">
+                            <Pagination
+                                total={meta.totalPages}
+                                page={currentPage}
+                                onChange={handlePageChange}
+                                color="#d02028"
+                                radius="xl"
+                            />
+                        </div>
                     </aside>
                 </div>
             </div>
