@@ -89,7 +89,13 @@ export default function BookingManagement() {
         const fetchMyRestaurant = async () => {
             try {
                 const response = await getMyRestaurant();
-                setIsCreated(true);
+                if (response.status != 200) {
+                    setIsCreated(false);
+                }
+                else {
+                    setIsCreated(true);
+                }
+                
 
                 setName(response.name);
                 setPhone(response.phone);
