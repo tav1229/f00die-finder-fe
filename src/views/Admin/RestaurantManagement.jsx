@@ -59,15 +59,14 @@ export default function RestaurantManagement() {
             key: "status",
             render: (_, { status }) => (
                 <span
-                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${
-                        status === 2
-                            ? "bg-[#FFC522] text-white"
-                            : status === 0
+                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${status === 2
+                        ? "bg-[#FFC522] text-white"
+                        : status === 0
                             ? "bg-[#8BC24A] text-white"
                             : status === 1
-                            ? "bg-[#F01B23] text-white"
-                            : ""
-                    }`}
+                                ? "bg-[#F01B23] text-white"
+                                : ""
+                        }`}
                 >
                     {statusName(status)}
                 </span>
@@ -78,22 +77,28 @@ export default function RestaurantManagement() {
             key: "action",
             render: (record) => (
                 <>
-                    {record.status === 2 && (
-                        <div className="flex gap-2">
-                            <button
-                                className="px-3 py-1 min-w-28 block border-[1.5px] border-[#8BC24A] text-[#8bc24a] rounded-md transition-all hover:bg-[#8bc24a] hover:text-white"
-                                onClick={() => handleUpdateStatus(record.id, 0)}
-                            >
-                                Chấp nhận
-                            </button>
-                            <button
-                                className="px-3 py-1 min-w-28 border-[1.5px] border-[#F01B23] text-[#F01B23] rounded-md transition-all hover:bg-[#F01B23] hover:text-white"
-                                onClick={() => handleUpdateStatus(record.id, 1)}
-                            >
-                                Vô hiệu hóa
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex gap-1 flex-col">
+                        {
+                            record.status != 0 && (
+                                <button
+                                    className="px-3 py-1 min-w-28 block border-[1.5px] border-[#8BC24A] text-[#8bc24a] rounded-md transition-all hover:bg-[#8bc24a] hover:text-white"
+                                    onClick={() => handleUpdateStatus(record.id, 0)}
+                                >
+                                    Chấp nhận
+                                </button>
+                            )
+                        }
+                        {
+                            record.status != 1 && (
+                                <button
+                                    className="px-3 py-1 min-w-28 border-[1.5px] border-[#F01B23] text-[#F01B23] rounded-md transition-all hover:bg-[#F01B23] hover:text-white"
+                                    onClick={() => handleUpdateStatus(record.id, 1)}
+                                >
+                                    Vô hiệu hóa
+                                </button>
+                            )
+                        }
+                    </div>
                 </>
             ),
         },
