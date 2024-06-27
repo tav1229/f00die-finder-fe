@@ -17,7 +17,7 @@ const baseApi = async (method, path, data) => {
   if (data instanceof FormData && data !== 0) {
     // Nếu data là instance của FormData, không cần đặt 'Content-Type'
     options.data = data;
-  } else if (data) {
+  } else {
     // Nếu data không phải là FormData, đặt 'Content-Type' là 'application/json'
     options.headers['Content-Type'] = 'application/json';
     options.data = data;
