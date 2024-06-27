@@ -27,8 +27,8 @@ export default function SignUp() {
     };
 
     const handleOk = () => {
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     const handleVerifyEmail = async (e) => {
         e.preventDefault();
@@ -127,6 +127,8 @@ export default function SignUp() {
                     <input
                         placeholder="Số điện thoại"
                         type="text"
+                        pattern="^0\d{9}$"
+                        title="Số điện thoại phải bắt đầu bằng số 0 và có đủ 10 chữ số"
                         className=" border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-3"
                         onChange={(e) => setPhone(e.target.value)}
                     />
@@ -170,35 +172,41 @@ export default function SignUp() {
                     )}
                     <div className="flex gap-1 text-sm font-medium">
                         <p>Đã có tài khoản?</p>
-                        <Link to="/sign-in" className="text-[#D02028] font-bold">
+                        <Link
+                            to="/sign-in"
+                            className="text-[#D02028] font-bold"
+                        >
                             Đăng nhập
                         </Link>
                     </div>
                 </form>
-                    <Modal
-                        open={open}
-                        title="Xác thực OTP"
-                        onOk={handleOk}
-                        onCancel={handleCancel}
-                        footer={null}
-                    >
-                        <form onSubmit={handleVerifyEmail} className="py-4">
-                            <input
-                                placeholder="Nhập mã OTP"
-                                type="text"
-                                className=" border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-3"
-                                required
-                                onChange={(e) => setOtp(e.target.value)}
-                            />
-                            <button
-                                type="submit"
-                                className="bg-[#D02028] text-white font-medium h-10 w-full text-sm mt-4"
-                            >
-                                Xác thực
-                            </button>
-                            <p className="text-sm mt-4">Vui lòng nhập mã xác thực được gửi trong email mà bạn vừa đăng ký</p>
-                        </form>
-                    </Modal>
+                <Modal
+                    open={open}
+                    title="Xác thực OTP"
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                    footer={null}
+                >
+                    <form onSubmit={handleVerifyEmail} className="py-4">
+                        <input
+                            placeholder="Nhập mã OTP"
+                            type="text"
+                            className=" border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-3"
+                            required
+                            onChange={(e) => setOtp(e.target.value)}
+                        />
+                        <button
+                            type="submit"
+                            className="bg-[#D02028] text-white font-medium h-10 w-full text-sm mt-4"
+                        >
+                            Xác thực
+                        </button>
+                        <p className="text-sm mt-4">
+                            Vui lòng nhập mã xác thực được gửi trong email mà
+                            bạn vừa đăng ký
+                        </p>
+                    </form>
+                </Modal>
             </div>
         </section>
     );

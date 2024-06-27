@@ -6,7 +6,9 @@ export default function ModalBookingDetail({
     isModalOpen,
     bookingDetail,
     handleCancel,
-    onSubmit
+    handleSubmit,
+    cancelContentButton,
+    okContentButton,
 }) {
     return (
         <Modal
@@ -78,13 +80,13 @@ export default function ModalBookingDetail({
                         className="w-full h-[36px] rounded-sm border border-gray-300 text-gray-800 font-semibold"
                         onClick={handleCancel}
                     >
-                        Quay lại
+                        { cancelContentButton ? cancelContentButton : "Quay lại"}
                     </button>
                     <button
                         className="w-full h-[36px] rounded-sm bg-[#D02028] text-white font-semibold"
-                        onClick={onSubmit ? onSubmit : handleCancel}
+                        onClick={handleSubmit ? handleSubmit : handleCancel}
                     >
-                        OK
+                        { okContentButton ? okContentButton : "Ok"}
                     </button>
                 </div>
             </div>

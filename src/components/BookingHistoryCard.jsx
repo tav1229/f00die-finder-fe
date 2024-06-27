@@ -12,7 +12,7 @@ export default function BookingHistoryCard({ status, reservation, onClick }) {
     }
 
     return (
-        <div className="flex flex-col gap-2 p-2 rounded-md bg-white" onClick={onClick}>
+        <div className="flex flex-col gap-2 p-2 rounded-md bg-white cursor-pointer" onClick={onClick}>
             <div className="py-3 flex justify-between gap-1 font-medium border-b">
                 <div className="px-1 flex-shrink-0">
                     <img

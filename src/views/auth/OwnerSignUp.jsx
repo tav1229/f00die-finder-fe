@@ -236,7 +236,7 @@ export default function OwnerSignUp() {
                     </div> */}
                     {step === 0 && (
                         <form
-                            action=""
+                            action={handleOnSubmit}
                             className="flex flex-col gap-5 px-5 w-full"
                         >
                             <input
@@ -249,6 +249,8 @@ export default function OwnerSignUp() {
                             <input
                                 placeholder="Số điện thoại"
                                 type="text"
+                                pattern="^0\d{9}$"
+                                title="Số điện thoại phải bắt đầu bằng số 0 và có đủ 10 chữ số"
                                 className=" border border-[#CCCCCC] h-10 outline-none text-gray-700 font-medium text-sm block w-full px-3"
                                 required
                                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -284,7 +286,7 @@ export default function OwnerSignUp() {
                             <button
                                 type="submit"
                                 className="bg-[#D02028] text-white font-medium h-10 text-sm mt-5"
-                                onClick={handleOnSubmit}
+                                // onClick={handleOnSubmit}
                             >
                                 Đăng ký
                             </button>

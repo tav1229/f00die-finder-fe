@@ -3,11 +3,11 @@ import IcWarning from '@/assets/icons/IcWarning';
 import IcSuccess from '@/assets/icons/IcSuccess';
 import IcError from '@/assets/icons/IcError';
 
-export default function ModalAlert({ isModalOpen, alertContent, handleCancel }) {
+export default function ModalAlert({ isModalOpen, alertContent, handleCancel, handleSubmit }) {
     return (
         <Modal
             open={isModalOpen}
-            // onOk={() => setVisible(false)}
+            onOk={handleSubmit}
             onCancel={handleCancel}
             footer={null}
             width={400}
@@ -27,7 +27,7 @@ export default function ModalAlert({ isModalOpen, alertContent, handleCancel }) 
                     </button>
                     <button
                         className="w-full h-[36px] rounded-sm bg-[#D02028] text-white font-semibold"
-                        onClick={handleCancel}
+                        onClick={handleSubmit ? handleSubmit : handleCancel}
                     >
                         OK
                     </button>

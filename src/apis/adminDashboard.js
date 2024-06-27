@@ -19,7 +19,7 @@ export const reservationsByMonth = async () => {
 export const getRestaurants = async (pageNumber = 1, pageSize = 10, status) => {
     // return await baseApi('GET', 'Restaurant/admin');
     let url = `Restaurant/admin?pageNumber=${pageNumber}&pageSize=${pageSize}`;
-    if (status) {
+    if (status > -1) {
         url += `&status=${status}`;
     }
     return await baseApi('GET', url);
@@ -31,7 +31,7 @@ export const updateRestaurantStatus = async (restaurantId, status) => {
 
 export const getUsers = async (pageNumber = 1, pageSize = 10, status) => {
     let url = `User/users?pageNumber=${pageNumber}&pageSize=${pageSize}`;
-    if (status) {
+    if (status > -1) {
         url += `&status=${status}`;
     }
     return await baseApi('GET', url);

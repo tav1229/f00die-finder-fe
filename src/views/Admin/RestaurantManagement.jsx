@@ -8,6 +8,8 @@ const activeButton =
 const inactiveButton = "px-3 py-1 text-sm font-medium";
 const statusName = (status) => {
     switch (status) {
+        case -1:
+            return "Tất cả";
         case 0:
             return "Chờ xét duyệt";
         case 1:
@@ -20,7 +22,7 @@ const statusName = (status) => {
 };
 export default function RestaurantManagement() {
     const [restaurants, setRestaurants] = useState([]);
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState(-1);
 
 
     const columns = [

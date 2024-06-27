@@ -9,20 +9,29 @@
 
 @font-face {
     font-family: "polli-fonts-regular";
-    src: local("polli-fonts-regular"), url("./assets/fonts/Will Albin-Clark - Polli Sans Regular.ttf") format("truetype"),
-    url('./assets/fonts/Will Albin-Clark - Polli Sans Regular.ttf') format("truetype");
+    src: local("polli-fonts-regular"),
+        url("./assets/fonts/Will Albin-Clark - Polli Sans Regular.ttf")
+            format("truetype"),
+        url("./assets/fonts/Will Albin-Clark - Polli Sans Regular.ttf")
+            format("truetype");
 }
 
 @font-face {
     font-family: "polli-fonts-bold";
-    src: local("polli-fonts-bold"), url("./assets/fonts/Will Albin-Clark - Polli Sans Bold.ttf") format("truetype"),
-    url('./assets/fonts/Will Albin-Clark - Polli Sans Bold.ttf') format("truetype");
+    src: local("polli-fonts-bold"),
+        url("./assets/fonts/Will Albin-Clark - Polli Sans Bold.ttf")
+            format("truetype"),
+        url("./assets/fonts/Will Albin-Clark - Polli Sans Bold.ttf")
+            format("truetype");
 }
 
 @font-face {
     font-family: "mono-fonts-bold";
-    src: local("mono-fonts-bold"), url("./assets/fonts/Will Albin-Clark - Polli Mono Bold.ttf") format("truetype"),
-    url('./assets/fonts/Will Albin-Clark - Polli Mono Bold.ttf') format("truetype");
+    src: local("mono-fonts-bold"),
+        url("./assets/fonts/Will Albin-Clark - Polli Mono Bold.ttf")
+            format("truetype"),
+        url("./assets/fonts/Will Albin-Clark - Polli Mono Bold.ttf")
+            format("truetype");
 }
 
 @layer base {
@@ -97,3 +106,25 @@
         @apply bg-background text-foreground;
     }
 }
+
+::-webkit-scrollbar-track {
+    background-color: #F0F0F0; /* $color-Neutrals-Grey-100 */
+    cursor: pointer;
+}
+
+::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+    background-color: #F0F0F0; /* $color-Neutrals-Grey-100 */
+    cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #D3D3D3; /* $color-Neutrals-Grey-300 */
+    cursor: pointer;
+    transition: background-color 1000ms linear;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+

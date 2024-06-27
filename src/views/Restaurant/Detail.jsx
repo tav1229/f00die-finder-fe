@@ -21,7 +21,7 @@ import {
     createReviewComment,
 } from "../../apis/reviewComment";
 import ModalAlert from "@/components/ModalAlert";
-import { Skeleton } from '@mantine/core';
+import { Skeleton } from "@mantine/core";
 
 const daysOfWeek = [
     "Chủ Nhật",
@@ -99,9 +99,12 @@ export default function Detail() {
     }, []);
 
     useEffect(() => {
-        const ids_saved = JSON.parse(localStorage.getItem("ids_saved"));
+        const ids_saved = localStorage.getItem("ids_saved");
+
         if (ids_saved) {
-            if (ids_saved.includes(id)) {
+            console.log("ids_saved:", ids_saved);
+            const parsed_ids_saved = JSON.parse(ids_saved);
+            if (parsed_ids_saved.includes(id)) {
                 setIsFavorite(true);
             }
         }
@@ -242,7 +245,7 @@ export default function Detail() {
             try {
                 const response = await unsaveRestaurant(id);
                 if (response.status != 200) {
-                    setIsModalOpen(true)
+                    setIsModalOpen(true);
                     setAlertContent({
                         status: "warning",
                         title: "Thông báo",
@@ -264,7 +267,7 @@ export default function Detail() {
             try {
                 const response = await saveRestaurant(id);
                 if (response.status != 200) {
-                    setIsModalOpen(true)
+                    setIsModalOpen(true);
                     setAlertContent({
                         status: "warning",
                         title: "Thông báo",
@@ -343,7 +346,7 @@ export default function Detail() {
                                                     src={item.url}
                                                     height={115}
                                                     className="object-cover rounded-sm"
-                                                // className="w-full h-[115px] object-cover rounded-sm"
+                                                    // className="w-full h-[115px] object-cover rounded-sm"
                                                 />
                                             )
                                         )}
@@ -354,15 +357,13 @@ export default function Detail() {
                         <div className="grid grid-cols-3 gap-4 ">
                             <div className="col-span-2 px-4 py-2 bg-white flex flex-col gap-2 rounded-md">
                                 <div className="w-full flex justify-between">
-                                    {
-                                        restaurant?.name ? (
-                                            <h1 className="py-1 text-[28px] font-bold">
-                                                {restaurant?.name}
-                                            </h1>
-                                        ) : (
-                                            <Skeleton height={30} width={250} />
-                                        )
-                                    }
+                                    {restaurant?.name ? (
+                                        <h1 className="py-1 text-[28px] font-bold">
+                                            {restaurant?.name}
+                                        </h1>
+                                    ) : (
+                                        <Skeleton height={30} width={250} />
+                                    )}
                                     <Tooltip
                                         title={
                                             isFavorite
@@ -384,18 +385,16 @@ export default function Detail() {
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <MapPin className="w-5 h-5" />
-                                    {
-                                        restaurant?.location ? (
-                                            <span className="font-medium">
-                                                {restaurant?.location?.address},{" "}
-                                                {restaurant?.wardOrCommune?.name},{" "}
-                                                {restaurant?.district?.name} ,{" "}
-                                                {restaurant?.provinceOrCity?.name}
-                                            </span>
-                                        ) : (
-                                            <Skeleton height={20} width={300} />
-                                        )
-                                    }
+                                    {restaurant?.location ? (
+                                        <span className="font-medium">
+                                            {restaurant?.location?.address},{" "}
+                                            {restaurant?.wardOrCommune?.name},{" "}
+                                            {restaurant?.district?.name} ,{" "}
+                                            {restaurant?.provinceOrCity?.name}
+                                        </span>
+                                    ) : (
+                                        <Skeleton height={20} width={300} />
+                                    )}
                                     {/* <span className="font-medium">
                                         {restaurant?.location?.address},{" "}
                                         {restaurant?.wardOrCommune?.name},{" "}
@@ -408,55 +407,56 @@ export default function Detail() {
                                     <span className="font-medium">
                                         Loại hình:
                                     </span>
-                                    {
-                                        restaurant?.cuisineTypes ? (
-                                            <span className="text-[#D02028] font-medium">
-                                                {restaurant?.cuisineTypes
-                                                    ?.map((item, index) => item.name)
-                                                    .join(", ")}
-                                            </span>
-                                        ) : (
-                                            <Skeleton height={20} width={200} />
-                                        )
-                                    }
+                                    {restaurant?.cuisineTypes ? (
+                                        <span className="text-[#D02028] font-medium">
+                                            {restaurant?.cuisineTypes
+                                                ?.map(
+                                                    (item, index) => item.name
+                                                )
+                                                .join(", ")}
+                                        </span>
+                                    ) : (
+                                        <Skeleton height={20} width={200} />
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <CircleDollarSign className="w-5 h-5" />
                                     <span className="font-medium">
                                         Khoảng giá:
                                     </span>
-                                    {
-                                        restaurant?.priceRangePerPerson ? (
-                                            <span className="text-[#D02028] font-medium">
-                                                {restaurant?.priceRangePerPerson.name}
-                                            </span>
-                                        ) : (
-                                            <Skeleton height={20} width={200} />
-                                        )
-                                    }
+                                    {restaurant?.priceRangePerPerson ? (
+                                        <span className="text-[#D02028] font-medium">
+                                            {
+                                                restaurant?.priceRangePerPerson
+                                                    .name
+                                            }
+                                        </span>
+                                    ) : (
+                                        <Skeleton height={20} width={200} />
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <UsersRound className="w-5 h-5" />
                                     <span className="font-medium">
                                         Kiểu khách hàng:
                                     </span>
-                                    {
-                                        restaurant?.customerTypes ? (
-                                            <span className="text-[#D02028] font-medium">
-                                                {restaurant?.customerTypes
-                                                    ?.map((item, index) => item.name)
-                                                    .join(", ")}
-                                            </span>
-                                        ) : (
-                                            <Skeleton height={20} width={200} />
-                                        )
-                                    }
+                                    {restaurant?.customerTypes ? (
+                                        <span className="text-[#D02028] font-medium">
+                                            {restaurant?.customerTypes
+                                                ?.map(
+                                                    (item, index) => item.name
+                                                )
+                                                .join(", ")}
+                                        </span>
+                                    ) : (
+                                        <Skeleton height={20} width={200} />
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Clock className="w-5 h-5" />
                                     {restaurant?.businessHours &&
-                                        checkIfOpen(restaurant?.businessHours)
-                                            .status === "OPEN" ? (
+                                    checkIfOpen(restaurant?.businessHours)
+                                        .status === "OPEN" ? (
                                         <span className="text-[#4CAF50] font-medium">
                                             {
                                                 checkIfOpen(
@@ -465,7 +465,7 @@ export default function Detail() {
                                             }
                                         </span>
                                     ) : checkIfOpen(restaurant?.businessHours)
-                                        .status === "SOON_OPEN" ? (
+                                          .status === "SOON_OPEN" ? (
                                         <span className="text-[#D02028] font-medium">
                                             {
                                                 checkIfOpen(
@@ -474,7 +474,7 @@ export default function Detail() {
                                             }
                                         </span>
                                     ) : checkIfOpen(restaurant?.businessHours)
-                                        .status === "SOON_CLOSE" ? (
+                                          .status === "SOON_CLOSE" ? (
                                         <span className="text-[#FFA500] font-medium">
                                             {
                                                 checkIfOpen(
@@ -553,7 +553,7 @@ export default function Detail() {
                                                     src={item.url}
                                                     height={235}
                                                     className="object-cover rounded-md"
-                                                // className="w-full h-[235px] object-cover rounded-md"
+                                                    // className="w-full h-[235px] object-cover rounded-md"
                                                 />
                                             )
                                         )}
@@ -595,20 +595,22 @@ export default function Detail() {
                                                 key={index}
                                             >
                                                 <span
-                                                    className={`uppercase text-center ${getCurrentDay() ===
+                                                    className={`uppercase text-center ${
+                                                        getCurrentDay() ===
                                                         item.dayOfWeek
-                                                        ? "text-red-600"
-                                                        : ""
-                                                        }`}
+                                                            ? "text-red-600"
+                                                            : ""
+                                                    }`}
                                                 >
                                                     {daysOfWeek[item.dayOfWeek]}
                                                 </span>
                                                 <span
-                                                    className={`text-center ${getCurrentDay() ===
+                                                    className={`text-center ${
+                                                        getCurrentDay() ===
                                                         item.dayOfWeek
-                                                        ? "text-red-600"
-                                                        : ""
-                                                        }`}
+                                                            ? "text-red-600"
+                                                            : ""
+                                                    }`}
                                                 >
                                                     {formatTime(item.openTime)}{" "}
                                                     -{" "}

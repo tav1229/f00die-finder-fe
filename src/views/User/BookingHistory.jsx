@@ -7,12 +7,16 @@ import { useEffect, useState } from "react";
 import NoData from "../../assets/NoData";
 import { Pagination } from "@mantine/core";
 import ModalBookingDetail from "../../components/ModalBookingDetail";
+import ModalAlert from "../../components/ModalAlert";
+import { updateReservationStatus } from "../../apis/reservation";
+import { toast } from "react-toastify";
 
 export default function BookingHistory() {
     const [activeTab, setActiveTab] = useState(0);
     const [reservations, setReservations] = useState([]);
     const [reservation, setReservation] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isOpenModalAlert, setIsOpenModalAlert] = useState(false);
     const [meta, setMeta] = useState({
         pageSize: 1,
         currentPage: 1,
@@ -93,6 +97,42 @@ export default function BookingHistory() {
             );
         }
     };
+
+    const handleClickCancelReservation = () => {
+        if (reservation.reservationStatus === 0) {
+            setIsOpenModalAlert(true);
+        } else {
+            setIsModalOpen(false)
+        }
+    };
+
+    const handleCancelReservation = async (reservationId) => {
+        try {
+            const response = await updateReservationStatus(reservationId, 3);
+            if (response.status === 200) {
+                // Cập nhật trạng thái thành công, cập nhật lại danh sách đặt chỗ
+                setReservations(
+                    reservations.map((reservation) => {
+                        if (reservation.id === reservationId) {
+                            return {
+                                ...reservation,
+                                reservationStatus: 3,
+                            };
+                        }
+                        return reservation;
+                    })
+                );
+                toast.success("Hủy đơn đặt chỗ thành công!");
+            } else {
+                //
+            }
+        } catch (error) {
+            console.error(
+                `Error in handleCancelReservation request: ${error.message}`
+            );
+            toast.error("Hủy đơn đặt chỗ thất bại!");
+        }
+    }
 
     return (
         <section className="w-full flex flex-col items-center justify-start h-auto min-h-screen bg-[#EEEEEE]">
@@ -211,7 +251,19 @@ export default function BookingHistory() {
             <ModalBookingDetail
                 isModalOpen={isModalOpen}
                 handleCancel={() => setIsModalOpen(false)}
+                handleSubmit={handleClickCancelReservation}
                 bookingDetail={reservation}
+                okContentButton={reservation.reservationStatus === 0 ? "Hủy đơn đặt bàn" : ""}
+            />
+            <ModalAlert
+                isModalOpen={isOpenModalAlert}
+                alertContent={{
+                    title: "Hủy đơn đặt bàn",
+                    content: "Bạn có chắc muốn hủy đơn đặt bàn không?",
+                    status: "warning",
+                }}
+                handleCancel={() => setIsOpenModalAlert(false)}
+                handleSubmit={() => { handleCancelReservation(reservation.id); setIsOpenModalAlert(false); }}
             />
         </section>
     );

@@ -339,7 +339,7 @@ export default function Booking() {
                 isModalOpen={isConfirm}
                 bookingDetail={bookingDetail}
                 handleCancel={() => setIsConfirm(false)}
-                onSubmit={handleOnSubmit}
+                handleSubmit={handleOnSubmit}
             />
         </section>
     );

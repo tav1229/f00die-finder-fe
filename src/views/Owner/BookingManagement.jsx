@@ -7,7 +7,7 @@ import {
 } from "../../apis/reservation";
 
 export default function BookingManagement() {
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState(-1);
     const [reservations, setReservations] = useState([]);
     const activeButton =
         "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
@@ -126,7 +126,7 @@ export default function BookingManagement() {
                                 className="px-3 py-1 border-[1.5px] border-[#F01B23] text-[#F01B23] rounded-md transition-all hover:bg-[#F01B23] hover:text-white"
                                 onClick={() => handleUpdateStatus(record.id, 2)}
                             >
-                                Hủy
+                                Từ chối
                             </button>
                         </div>
                     )}
