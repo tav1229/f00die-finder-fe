@@ -12,11 +12,11 @@ const statusName = (status) => {
         case -1:
             return "Tất cả";
         case 0:
-            return "Chờ xét duyệt";
-        case 1:
             return "Hoạt động";
-        case 2:
+        case 1:
             return "Ngừng hoạt động";
+        case 2:
+            return "Chờ xét duyệt";
         default:
             return "";
     }
@@ -60,11 +60,11 @@ export default function RestaurantManagement() {
             render: (_, { status }) => (
                 <span
                     className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${
-                        status === 0
+                        status === 2
                             ? "bg-[#FFC522] text-white"
-                            : status === 1
+                            : status === 0
                             ? "bg-[#8BC24A] text-white"
-                            : status === 2
+                            : status === 1
                             ? "bg-[#F01B23] text-white"
                             : ""
                     }`}
@@ -78,17 +78,17 @@ export default function RestaurantManagement() {
             key: "action",
             render: (record) => (
                 <>
-                    {record.status === 0 && (
+                    {record.status === 2 && (
                         <div className="flex gap-2">
                             <button
                                 className="px-3 py-1 min-w-28 block border-[1.5px] border-[#8BC24A] text-[#8bc24a] rounded-md transition-all hover:bg-[#8bc24a] hover:text-white"
-                                onClick={() => handleUpdateStatus(record.id, 1)}
+                                onClick={() => handleUpdateStatus(record.id, 0)}
                             >
                                 Chấp nhận
                             </button>
                             <button
                                 className="px-3 py-1 min-w-28 border-[1.5px] border-[#F01B23] text-[#F01B23] rounded-md transition-all hover:bg-[#F01B23] hover:text-white"
-                                onClick={() => handleUpdateStatus(record.id, 2)}
+                                onClick={() => handleUpdateStatus(record.id, 1)}
                             >
                                 Vô hiệu hóa
                             </button>
@@ -190,25 +190,25 @@ export default function RestaurantManagement() {
                         </button>
                         <button
                             className={
+                                activeTab === 2 ? activeButton : inactiveButton
+                            }
+                            onClick={() => filterRestaurants(2)}
+                        >
+                            Chờ xét duyệt
+                        </button>
+                        <button
+                            className={
                                 activeTab === 0 ? activeButton : inactiveButton
                             }
                             onClick={() => filterRestaurants(0)}
                         >
-                            Chờ xét duyệt
+                            Hoạt động
                         </button>
                         <button
                             className={
                                 activeTab === 1 ? activeButton : inactiveButton
                             }
                             onClick={() => filterRestaurants(1)}
-                        >
-                            Hoạt động
-                        </button>
-                        <button
-                            className={
-                                activeTab === 2 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterRestaurants(2)}
                         >
                             Ngừng hoạt động
                         </button>
