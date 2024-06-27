@@ -236,7 +236,7 @@ export default function OwnerSignUp() {
                     </div> */}
                     {step === 0 && (
                         <form
-                            action={handleOnSubmit}
+                            onSubmit={handleOnSubmit}
                             className="flex flex-col gap-5 px-5 w-full"
                         >
                             <input
@@ -286,7 +286,7 @@ export default function OwnerSignUp() {
                             <button
                                 type="submit"
                                 className="bg-[#D02028] text-white font-medium h-10 text-sm mt-5"
-                                // onClick={handleOnSubmit}
+                            // onClick={handleOnSubmit}
                             >
                                 Đăng ký
                             </button>
