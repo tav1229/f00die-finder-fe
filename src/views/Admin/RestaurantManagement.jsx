@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Navigation from "./Navigation";
 import { Table } from "antd";
 import { Pagination } from "@mantine/core";
+import { Search } from "lucide-react";
 
 const activeButton =
     "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
@@ -24,7 +25,7 @@ const statusName = (status) => {
 export default function RestaurantManagement() {
     const [restaurants, setRestaurants] = useState([]);
     const [activeTab, setActiveTab] = useState(-1);
-
+    const [searchValue, setSearchValue] = useState("");
     const [meta, setMeta] = useState({
         pageSize: 1,
         currentPage: 1,
@@ -120,6 +121,7 @@ export default function RestaurantManagement() {
         fetchRestaurants();
     }, []);
 
+
     const handleUpdateStatus = async (id, status) => {
         try {
             const response = await updateRestaurantStatus(id, status);
@@ -145,7 +147,7 @@ export default function RestaurantManagement() {
 
     const handlePageChange = async (page) => {
         try {
-            const response = await getRestaurants(page, 10, activeTab);
+            const response = await getRestaurants(page, 10, activeTab, searchValue);
             setRestaurants(response.data);
             setMeta(response.meta);
             setCurrentPage(page);
@@ -184,39 +186,53 @@ export default function RestaurantManagement() {
 
                 <div className="col-span-4 flex flex-col rounded-md px-5">
                     <h1 className="text-lg font-semibold">Quản lý đặt bàn</h1>
-                    <nav className="flex gap-3 w-full py-5">
-                        <button
-                            className={
-                                activeTab === -1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterRestaurants(-1)}
-                        >
-                            Tất cả
-                        </button>
-                        <button
-                            className={
-                                activeTab === 2 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterRestaurants(2)}
-                        >
-                            Chờ xét duyệt
-                        </button>
-                        <button
-                            className={
-                                activeTab === 0 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterRestaurants(0)}
-                        >
-                            Hoạt động
-                        </button>
-                        <button
-                            className={
-                                activeTab === 1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterRestaurants(1)}
-                        >
-                            Ngừng hoạt động
-                        </button>
+                    <nav className="flex gap-3 w-full py-5 justify-between">
+                        <div className="flex gap-3 ">
+                            <button
+                                className={
+                                    activeTab === -1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterRestaurants(-1)}
+                            >
+                                Tất cả
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 2 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterRestaurants(2)}
+                            >
+                                Chờ xét duyệt
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 0 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterRestaurants(0)}
+                            >
+                                Hoạt động
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterRestaurants(1)}
+                            >
+                                Ngừng hoạt động
+                            </button>
+                        </div>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm"
+                                className="px-3 py-1 border border-gray-300 rounded-md"
+                                onChange={(e) => setSearchValue(e.target.value)}
+                            />
+
+                            <button className="px-3 py-1 bg-[#F01B23] text-white rounded-md" onClick={()=> handlePageChange(1)}>
+                                <Search size={20} />
+                            </button>
+                        </div>
                     </nav>
                     <aside className="w-full bg-white">
                         <Table

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Navigation from "./Navigation";
 import { Table } from "antd";
 import { Pagination } from "@mantine/core";
+import { Search } from "lucide-react";
 
 const activeButton =
     "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
@@ -29,6 +30,7 @@ export default function UserManagement() {
         totalPages: 1,
     });
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchValue, setSearchValue] = useState("");
 
     const columns = [
         {
@@ -76,15 +78,14 @@ export default function UserManagement() {
             key: "status",
             render: (_, { status }) => (
                 <span
-                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${
-                        status === 2
-                            ? "bg-[#FFC522] text-white"
-                            : status === 0
+                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${status === 2
+                        ? "bg-[#FFC522] text-white"
+                        : status === 0
                             ? "bg-[#8BC24A] text-white"
                             : status === 1
-                            ? "bg-[#F01B23] text-white"
-                            : ""
-                    }`}
+                                ? "bg-[#F01B23] text-white"
+                                : ""
+                        }`}
                 >
                     {statusName(status)}
                 </span>
@@ -133,7 +134,7 @@ export default function UserManagement() {
 
     const handlePageChange = async (page) => {
         try {
-            const response = await getUsers(page, 10, activeTab);
+            const response = await getUsers(page, 10, activeTab, searchValue);
             setUsers(response.data);
             setMeta(response.meta);
             setCurrentPage(page);
@@ -196,39 +197,53 @@ export default function UserManagement() {
                     <h1 className="text-lg font-semibold">
                         Quản lý người dùng
                     </h1>
-                    <nav className="flex gap-3 w-full py-5">
-                        <button
-                            className={
-                                activeTab === -1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterUsers(-1)}
-                        >
-                            Tất cả
-                        </button>
-                        <button
-                            className={
-                                activeTab === 0 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterUsers(0)}
-                        >
-                            Hoạt động
-                        </button>
-                        <button
-                            className={
-                                activeTab === 1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterUsers(1)}
-                        >
-                            Bị khóa
-                        </button>
-                        <button
-                            className={
-                                activeTab === 2 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterUsers(2)}
-                        >
-                            Chưa xác nhận
-                        </button>
+                    <nav className="flex gap-3 w-full py-5 justify-between">
+                        <div className="flex gap-3">
+                            <button
+                                className={
+                                    activeTab === -1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterUsers(-1)}
+                            >
+                                Tất cả
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 0 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterUsers(0)}
+                            >
+                                Hoạt động
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterUsers(1)}
+                            >
+                                Bị khóa
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 2 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterUsers(2)}
+                            >
+                                Chưa xác nhận
+                            </button>
+                        </div>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm"
+                                className="px-3 py-1 border border-gray-300 rounded-md"
+                                onChange={(e) => setSearchValue(e.target.value)}
+                            />
+
+                            <button className="px-3 py-1 bg-[#F01B23] text-white rounded-md" onClick={() => handlePageChange(1)}>
+                                <Search size={20} />
+                            </button>
+                        </div>
                     </nav>
                     <aside className="w-full bg-white">
                         <Table

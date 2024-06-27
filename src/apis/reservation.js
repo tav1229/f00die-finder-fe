@@ -10,10 +10,13 @@ export const createRevervation = async (data) => {
     }
 }
 
-export const getReservationMyRestaurant = async (pageSize = 10, pageNumber = 1, ReservationStatus) => {
+export const getReservationMyRestaurant = async (pageSize = 10, pageNumber = 1, ReservationStatus, SearchValue) => {
     let queryParams = `pageSize=${pageSize}&pageNumber=${pageNumber}`;
     if (ReservationStatus >= 0) {
         queryParams += `&ReservationStatus=${ReservationStatus}`;
+    }
+    if (SearchValue) {
+        queryParams += `&SearchValue=${SearchValue}`;
     }
     return await baseApi('GET', `Reservation/my-restaurant?${queryParams}`);
     // return await baseApi('GET', 'Reservation/my-restaurant');

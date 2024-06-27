@@ -5,6 +5,8 @@ import {
     getReservationMyRestaurant,
     updateReservationStatus,
 } from "../../apis/reservation";
+import { Search } from "lucide-react";
+import { Pagination } from "@mantine/core";
 
 export default function BookingManagement() {
     const [activeTab, setActiveTab] = useState(-1);
@@ -12,6 +14,13 @@ export default function BookingManagement() {
     const activeButton =
         "px-3 py-1 text-sm font-medium border-b border-b-2 border-[#F01B23] box-sizing";
     const inactiveButton = "px-3 py-1 text-sm font-medium";
+    const [meta, setMeta] = useState({
+        pageSize: 1,
+        currentPage: 1,
+        totalPages: 1,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
         const fetchReservation = async () => {
@@ -23,18 +32,23 @@ export default function BookingManagement() {
                         ...item,
                         date,
                         time,
-                        createdDate: undefined, // Xóa trường createdDate nếu bạn không muốn giữ nó
+                        createdDate: removeTicks(item.createdDate),
                     };
                 });
                 setReservations(transformedArray);
+                setMeta(response.meta);
             }
         };
         fetchReservation();
     }, []);
 
-    const filterReservations = async (status) => {
+    const removeTicks = (dateString) => {
+        return dateString.replace(/T/g, " ").replace(/\..+/, "");
+    };
+
+    const filterReservations = async (status, page) => {
         setActiveTab(status);
-        const response = await getReservationMyRestaurant(10, 1, status);
+        const response = await getReservationMyRestaurant(10, page, status, searchValue);
         try {
             if (response.status === 200) {
                 const transformedArray = response.data.map((item) => {
@@ -43,10 +57,12 @@ export default function BookingManagement() {
                         ...item,
                         date,
                         time,
-                        createdDate: undefined,
+                        createdDate: removeTicks(item.createdDate),
                     };
                 });
                 setReservations(transformedArray);
+                setMeta(response.meta);
+                setCurrentPage(page);
             }
         } catch (error) {
             console.error("Error filtering reservations:", error);
@@ -68,6 +84,11 @@ export default function BookingManagement() {
             title: "Email",
             dataIndex: "customerEmail",
             key: "customerEmail",
+        },
+        {
+            title: "Ngày tạo",
+            dataIndex: "createdDate",
+            key: "createdDate",
         },
         {
             title: "Ngày đặt trước",
@@ -95,15 +116,14 @@ export default function BookingManagement() {
             key: "reservationStatus",
             render: (_, { reservationStatus }) => (
                 <span
-                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${
-                        reservationStatus === 0
+                    className={`px-2 py-1 text-xs text-center font-semibold rounded-full min-w-24 block ${reservationStatus === 0
                             ? "bg-[#FFC522] text-white"
                             : reservationStatus === 1
-                            ? "bg-[#8BC24A] text-white"
-                            : reservationStatus === 2
-                            ? "bg-[#F01B23] text-white"
-                            : ""
-                    }`}
+                                ? "bg-[#8BC24A] text-white"
+                                : reservationStatus === 2
+                                    ? "bg-[#F01B23] text-white"
+                                    : ""
+                        }`}
                 >
                     {statusName(reservationStatus)}
                 </span>
@@ -115,7 +135,7 @@ export default function BookingManagement() {
             render: (record) => (
                 <>
                     {record.reservationStatus === 0 && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
                             <button
                                 className="px-3 py-1 min-w-28 block border-[1.5px] border-[#8BC24A] text-[#8bc24a] rounded-md transition-all hover:bg-[#8bc24a] hover:text-white"
                                 onClick={() => handleUpdateStatus(record.id, 1)}
@@ -200,47 +220,61 @@ export default function BookingManagement() {
                 <div className="col-span-4 flex flex-col rounded-md bg-white py-3 px-5">
                     <h1 className="text-lg font-semibold">Quản lý đặt bàn</h1>
 
-                    <nav className="flex gap-3 w-full py-5">
-                        <button
-                            className={
-                                activeTab === -1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterReservations(-1)}
-                        >
-                            Tất cả
-                        </button>
-                        <button
-                            className={
-                                activeTab === 0 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterReservations(0)}
-                        >
-                            Chờ xử lý
-                        </button>
-                        <button
-                            className={
-                                activeTab === 1 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterReservations(1)}
-                        >
-                            Đã chấp thuận
-                        </button>
-                        <button
-                            className={
-                                activeTab === 2 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterReservations(2)}
-                        >
-                            Đã từ chối
-                        </button>
-                        <button
-                            className={
-                                activeTab === 3 ? activeButton : inactiveButton
-                            }
-                            onClick={() => filterReservations(3)}
-                        >
-                            Đã hủy
-                        </button>
+                    <nav className="flex gap-3 w-full py-5 justify-between">
+                        <div>
+                            <button
+                                className={
+                                    activeTab === -1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterReservations(-1)}
+                            >
+                                Tất cả
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 0 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterReservations(0)}
+                            >
+                                Chờ xử lý
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 1 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterReservations(1)}
+                            >
+                                Đã chấp thuận
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 2 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterReservations(2)}
+                            >
+                                Đã từ chối
+                            </button>
+                            <button
+                                className={
+                                    activeTab === 3 ? activeButton : inactiveButton
+                                }
+                                onClick={() => filterReservations(3)}
+                            >
+                                Đã hủy
+                            </button>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm"
+                                className="border border-gray-300 px-2 py-1 rounded-md"
+                                onChange={(e) => setSearchValue(e.target.value)}
+                            />
+                            <button className="px-3 py-1 bg-[#F01B23] text-white rounded-md" onClick={() => filterReservations(activeTab, 1)}>
+                                <Search size={20} />
+                            </button>
+                        </div>
                     </nav>
 
                     <aside className="w-full">
@@ -249,8 +283,18 @@ export default function BookingManagement() {
                             columns={columns}
                             className="overflow-auto"
                             scroll={{ x: 900 }}
+                            pagination={false}
                         />
                     </aside>
+                    <div className="flex justify-end py-6 px-5">
+                            <Pagination
+                                total={meta.totalPages}
+                                page={currentPage}
+                                onChange={(page) => filterReservations(activeTab, page)}
+                                color="#d02028"
+                                radius="xl"
+                            />
+                        </div>
                 </div>
             </div>
         </section>

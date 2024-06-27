@@ -10,7 +10,7 @@ import { Image } from "antd";
 import { useBookingStore } from "@/storages/booking";
 import DOMPurify from "dompurify";
 import { Rating, Textarea } from "@mantine/core";
-import { MapPin, Flag, Clock, Star, Heart } from "lucide-react";
+import { MapPin, Flag, Clock, Star, Heart, Phone } from "lucide-react";
 import { Carousel, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
 import { toast, Bounce } from "react-toastify";
@@ -353,7 +353,7 @@ export default function Detail() {
                                                     src={item.url}
                                                     height={115}
                                                     className="object-cover rounded-sm"
-                                                    // className="w-full h-[115px] object-cover rounded-sm"
+                                                // className="w-full h-[115px] object-cover rounded-sm"
                                                 />
                                             )
                                         )}
@@ -409,6 +409,18 @@ export default function Detail() {
                                         {restaurant?.provinceOrCity?.name}
                                     </span> */}
                                 </div>
+                                <div className="flex gap-3">
+                                    {restaurant?.phone ? (
+                                        <>
+                                            <Phone className="w-5 h-5" />
+                                            <span className="font-medium">
+                                                Số điện thoại: <span className="underline">{restaurant?.phone}</span>
+                                            </span>
+                                        </>) : (
+                                        <Skeleton height={20} width={200} />
+                                    )
+                                    }
+                                </div>
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Flag className="w-5 h-5" />
                                     <span className="font-medium">
@@ -462,8 +474,8 @@ export default function Detail() {
                                 <div className="flex items-center gap-3 text-gray-800">
                                     <Clock className="w-5 h-5" />
                                     {restaurant?.businessHours &&
-                                    checkIfOpen(restaurant?.businessHours)
-                                        .status === "OPEN" ? (
+                                        checkIfOpen(restaurant?.businessHours)
+                                            .status === "OPEN" ? (
                                         <span className="text-[#4CAF50] font-medium">
                                             {
                                                 checkIfOpen(
@@ -472,7 +484,7 @@ export default function Detail() {
                                             }
                                         </span>
                                     ) : checkIfOpen(restaurant?.businessHours)
-                                          .status === "SOON_OPEN" ? (
+                                        .status === "SOON_OPEN" ? (
                                         <span className="text-[#D02028] font-medium">
                                             {
                                                 checkIfOpen(
@@ -481,7 +493,7 @@ export default function Detail() {
                                             }
                                         </span>
                                     ) : checkIfOpen(restaurant?.businessHours)
-                                          .status === "SOON_CLOSE" ? (
+                                        .status === "SOON_CLOSE" ? (
                                         <span className="text-[#FFA500] font-medium">
                                             {
                                                 checkIfOpen(
@@ -560,7 +572,7 @@ export default function Detail() {
                                                     src={item.url}
                                                     height={235}
                                                     className="object-cover rounded-md"
-                                                    // className="w-full h-[235px] object-cover rounded-md"
+                                                // className="w-full h-[235px] object-cover rounded-md"
                                                 />
                                             )
                                         )}
@@ -602,22 +614,20 @@ export default function Detail() {
                                                 key={index}
                                             >
                                                 <span
-                                                    className={`uppercase text-center ${
-                                                        getCurrentDay() ===
+                                                    className={`uppercase text-center ${getCurrentDay() ===
                                                         item.dayOfWeek
-                                                            ? "text-red-600"
-                                                            : ""
-                                                    }`}
+                                                        ? "text-red-600"
+                                                        : ""
+                                                        }`}
                                                 >
                                                     {daysOfWeek[item.dayOfWeek]}
                                                 </span>
                                                 <span
-                                                    className={`text-center ${
-                                                        getCurrentDay() ===
+                                                    className={`text-center ${getCurrentDay() ===
                                                         item.dayOfWeek
-                                                            ? "text-red-600"
-                                                            : ""
-                                                    }`}
+                                                        ? "text-red-600"
+                                                        : ""
+                                                        }`}
                                                 >
                                                     {formatTime(item.openTime)}{" "}
                                                     -{" "}

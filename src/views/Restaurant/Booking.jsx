@@ -28,7 +28,7 @@ export default function Booking() {
     const [restaurant, setRestaurant] = useState({});
     const [isClickedUpdate, setIsClickedUpdate] = useState(false);
     const [isConfirm, setIsConfirm] = useState(false);
-    
+
     const [bookingDetail, setBookingDetail] = useState({});
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -229,6 +229,8 @@ export default function Booking() {
                                         required
                                         className="border border-[#CCCCCC] h-[34px] outline-none text-[#555555] text-sm rounded-sm block w-full p-2"
                                         placeholder="Nhập số điện thoại"
+                                        pattern="^0\d{9}$"
+                                        title="Số điện thoại phải bắt đầu bằng số 0 và có đủ 10 chữ số"
                                         onChange={(event) =>
                                             setPhone(event.target.value)
                                         }
